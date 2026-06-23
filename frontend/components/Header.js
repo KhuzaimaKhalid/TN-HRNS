@@ -22,10 +22,7 @@ export default function Header() {
           <li><a onClick={() => navigate('/')}>Careers</a></li>
           <li><a onClick={() => navigate('/')}>Contact</a></li>
         </ul>
-        <div className="nav-actions">
-          <a className="btn btn-outline" onClick={() => navigate('/login')}>Login</a>
-          <a className="btn btn-primary" onClick={() => navigate('/register')}>Sign Up</a>
-        </div>
+        {/* Removed nav-actions (Login/Sign Up buttons) */}
       </div>
     </header>
   );

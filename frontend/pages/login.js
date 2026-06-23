@@ -4,8 +4,6 @@ import Footer from '@/components/Footer';
 
 export default function Login() {
   const router = useRouter();
-  const [selectedRole, setSelectedRole] = useState('Employee');
-  const roles = ['Admin', 'HR', 'PM', 'Team lead', 'CEO', 'CFO', 'CTO', 'Employee'];
 
   // Form state
   const [email, setEmail] = useState('');
@@ -28,7 +26,6 @@ export default function Login() {
       setErrors(validationErrors);
       return;
     }
-    // If valid, navigate to dashboard
     router.push('/dashboard');
   };
 
@@ -43,18 +40,7 @@ export default function Login() {
           <h1 className="auth-welcome">Welcome back</h1>
           <p className="auth-subtitle">Enter your credentials to access your dashboard.</p>
 
-          <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '8px' }}>Select your role</label>
-          <div className="role-grid">
-            {roles.map(role => (
-              <button
-                key={role}
-                className={`role-btn ${selectedRole === role ? 'active' : ''}`}
-                onClick={() => setSelectedRole(role)}
-              >
-                {role}
-              </button>
-            ))}
-          </div>
+          {/* Role selection removed */}
 
           <button className="auth-google">
             <i className="fab fa-google"></i> Continue with Google
