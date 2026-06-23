@@ -1,4 +1,12 @@
+import { useRouter } from 'next/router';
+
 export default function Footer() {
+  const router = useRouter();
+
+  const navigate = (path) => {
+    router.push(path);
+  };
+
   return (
     <footer className="footer-new">
       <div className="container">
@@ -18,10 +26,10 @@ export default function Footer() {
           </div>
           <div className="footer-right">
             <ul className="footer-nav-links">
-              <li><a>Home</a></li>
-              <li><a>Features</a></li>
-              <li><a>Careers</a></li>
-              <li><a>Contact</a></li>
+              <li><a onClick={() => navigate('/')}>Home</a></li>
+              <li><a onClick={() => navigate('/')}>Features</a></li>
+              <li><a onClick={() => navigate('/')}>Careers</a></li>
+              <li><a onClick={() => navigate('/')}>Contact</a></li>
             </ul>
           </div>
         </div>
