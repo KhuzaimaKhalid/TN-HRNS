@@ -1392,6 +1392,14 @@ body::before {
     background-color: #fff8f8;
 }
 
+/* ── Form validation error styles ── */
+.form-input.error,
+.form-select.error,
+.upload-area.error {
+    border-color: #dc3545 !important;
+    background-color: #fff8f8 !important;
+}
+
 .error-message {
     display: block;
     color: #dc3545;

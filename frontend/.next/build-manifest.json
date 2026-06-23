@@ -27,10 +27,25 @@
       "static/chunks/main.js",
       "static/chunks/pages/_error.js"
     ],
-    "/register": [
+    "/apply": [
       "static/chunks/webpack.js",
       "static/chunks/main.js",
-      "static/chunks/pages/register.js"
+      "static/chunks/pages/apply.js"
+    ],
+    "/dashboard": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/dashboard.js"
+    ],
+    "/login": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/login.js"
+    ],
+    "/upload": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/upload.js"
     ]
   },
   "ampFirstPages": []
