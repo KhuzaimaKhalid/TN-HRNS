@@ -3,12 +3,11 @@ import { useRouter } from 'next/router';
 
 export default function DocumentUpload() {
   const router = useRouter();
-  const [files, setFiles] = useState({ resume: null, transcript: null, cnic: null });
+  const [files, setFiles] = useState({ resume: null, cnic: null });
   const [errors, setErrors] = useState({});
 
   const handleFileChange = (type, file) => {
     setFiles({ ...files, [type]: file });
-    // Clear error for that field
     if (errors[type]) {
       setErrors({ ...errors, [type]: null });
     }
@@ -17,7 +16,6 @@ export default function DocumentUpload() {
   const validate = () => {
     const newErrors = {};
     if (!files.resume) newErrors.resume = 'Resume/CV is required';
-    if (!files.transcript) newErrors.transcript = 'Transcript is required';
     if (!files.cnic) newErrors.cnic = 'CNIC is required';
     return newErrors;
   };
@@ -29,7 +27,6 @@ export default function DocumentUpload() {
       setErrors(validationErrors);
       return;
     }
-    // Mock submission – navigate to dashboard
     alert('Application submitted successfully!');
     router.push('/dashboard');
   };
@@ -45,44 +42,75 @@ export default function DocumentUpload() {
       </p>
 
       <form onSubmit={handleSubmit}>
-        {['resume', 'transcript', 'cnic'].map((type) => {
-          const label = type === 'resume' ? 'Resume / CV' : type === 'transcript' ? 'Transcript' : 'CNIC';
-          return (
-            <div className="upload-group" key={type}>
-              <label style={{ fontWeight: 500, fontSize: '0.85rem' }}>{label}</label>
-              <div className={`upload-area ${errors[type] ? 'error' : ''}`}>
-                <i className="fas fa-cloud-upload-alt upload-icon"></i>
-                <p>
-                  Drag & drop or{' '}
-                  <strong
-                    onClick={() => document.getElementById(`${type}-input`).click()}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    browse
-                  </strong>
-                </p>
-                <span className="upload-hint">PDF, DOCX up to 5MB</span>
-                <input
-                  id={`${type}-input`}
-                  type="file"
-                  accept=".pdf,.docx"
-                  style={{ display: 'none' }}
-                  onChange={(e) => {
-                    if (e.target.files.length > 0) {
-                      handleFileChange(type, e.target.files[0]);
-                    }
-                  }}
-                />
-                {files[type] && (
-                  <div style={{ marginTop: '8px', fontSize: '0.85rem', color: 'var(--primary)' }}>
-                    <i className="fas fa-check-circle"></i> {files[type].name}
-                  </div>
-                )}
-                {errors[type] && <span className="error-message">{errors[type]}</span>}
+        {/* Resume / CV */}
+        <div className="upload-group">
+          <label style={{ fontWeight: 500, fontSize: '0.85rem' }}>Resume / CV</label>
+          <div className={`upload-area ${errors.resume ? 'error' : ''}`}>
+            <i className="fas fa-cloud-upload-alt upload-icon"></i>
+            <p>
+              Drag & drop or{' '}
+              <strong
+                onClick={() => document.getElementById('resume-input').click()}
+                style={{ cursor: 'pointer' }}
+              >
+                browse
+              </strong>
+            </p>
+            <span className="upload-hint">PDF, DOCX up to 5MB</span>
+            <input
+              id="resume-input"
+              type="file"
+              accept=".pdf,.docx"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                if (e.target.files.length > 0) {
+                  handleFileChange('resume', e.target.files[0]);
+                }
+              }}
+            />
+            {files.resume && (
+              <div style={{ marginTop: '8px', fontSize: '0.85rem', color: 'var(--primary)' }}>
+                <i className="fas fa-check-circle"></i> {files.resume.name}
               </div>
-            </div>
-          );
-        })}
+            )}
+            {errors.resume && <span className="error-message">{errors.resume}</span>}
+          </div>
+        </div>
+
+        {/* CNIC */}
+        <div className="upload-group">
+          <label style={{ fontWeight: 500, fontSize: '0.85rem' }}>CNIC</label>
+          <div className={`upload-area ${errors.cnic ? 'error' : ''}`}>
+            <i className="fas fa-cloud-upload-alt upload-icon"></i>
+            <p>
+              Drag & drop or{' '}
+              <strong
+                onClick={() => document.getElementById('cnic-input').click()}
+                style={{ cursor: 'pointer' }}
+              >
+                browse
+              </strong>
+            </p>
+            <span className="upload-hint">PDF, DOCX up to 5MB</span>
+            <input
+              id="cnic-input"
+              type="file"
+              accept=".pdf,.docx"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                if (e.target.files.length > 0) {
+                  handleFileChange('cnic', e.target.files[0]);
+                }
+              }}
+            />
+            {files.cnic && (
+              <div style={{ marginTop: '8px', fontSize: '0.85rem', color: 'var(--primary)' }}>
+                <i className="fas fa-check-circle"></i> {files.cnic.name}
+              </div>
+            )}
+            {errors.cnic && <span className="error-message">{errors.cnic}</span>}
+          </div>
+        </div>
 
         <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
           <button type="button" className="btn btn-ghost" style={{ flex: 1 }} onClick={() => router.push('/apply')}>
