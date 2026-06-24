@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 
 export default function DocumentUpload() {
   const router = useRouter();
-  const [files, setFiles] = useState({ resume: null, cnic: null });
+  const [files, setFiles] = useState({ resume: null, cnicFront: null, cnicBack: null });
   const [errors, setErrors] = useState({});
 
   const handleFileChange = (type, file) => {
@@ -16,7 +16,8 @@ export default function DocumentUpload() {
   const validate = () => {
     const newErrors = {};
     if (!files.resume) newErrors.resume = 'Resume/CV is required';
-    if (!files.cnic) newErrors.cnic = 'CNIC is required';
+    if (!files.cnicFront) newErrors.cnicFront = 'CNIC Front is required';
+    if (!files.cnicBack) newErrors.cnicBack = 'CNIC Back is required';
     return newErrors;
   };
 
@@ -77,15 +78,15 @@ export default function DocumentUpload() {
           </div>
         </div>
 
-        {/* CNIC */}
+        {/* CNIC Front */}
         <div className="upload-group">
-          <label style={{ fontWeight: 500, fontSize: '0.85rem' }}>CNIC</label>
-          <div className={`upload-area ${errors.cnic ? 'error' : ''}`}>
+          <label style={{ fontWeight: 500, fontSize: '0.85rem' }}>CNIC Front</label>
+          <div className={`upload-area ${errors.cnicFront ? 'error' : ''}`}>
             <i className="fas fa-cloud-upload-alt upload-icon"></i>
             <p>
               Drag & drop or{' '}
               <strong
-                onClick={() => document.getElementById('cnic-input').click()}
+                onClick={() => document.getElementById('cnicFront-input').click()}
                 style={{ cursor: 'pointer' }}
               >
                 browse
@@ -93,22 +94,57 @@ export default function DocumentUpload() {
             </p>
             <span className="upload-hint">PDF, DOCX up to 5MB</span>
             <input
-              id="cnic-input"
+              id="cnicFront-input"
               type="file"
               accept=".pdf,.docx"
               style={{ display: 'none' }}
               onChange={(e) => {
                 if (e.target.files.length > 0) {
-                  handleFileChange('cnic', e.target.files[0]);
+                  handleFileChange('cnicFront', e.target.files[0]);
                 }
               }}
             />
-            {files.cnic && (
+            {files.cnicFront && (
               <div style={{ marginTop: '8px', fontSize: '0.85rem', color: 'var(--primary)' }}>
-                <i className="fas fa-check-circle"></i> {files.cnic.name}
+                <i className="fas fa-check-circle"></i> {files.cnicFront.name}
               </div>
             )}
-            {errors.cnic && <span className="error-message">{errors.cnic}</span>}
+            {errors.cnicFront && <span className="error-message">{errors.cnicFront}</span>}
+          </div>
+        </div>
+
+        {/* CNIC Back */}
+        <div className="upload-group">
+          <label style={{ fontWeight: 500, fontSize: '0.85rem' }}>CNIC Back</label>
+          <div className={`upload-area ${errors.cnicBack ? 'error' : ''}`}>
+            <i className="fas fa-cloud-upload-alt upload-icon"></i>
+            <p>
+              Drag & drop or{' '}
+              <strong
+                onClick={() => document.getElementById('cnicBack-input').click()}
+                style={{ cursor: 'pointer' }}
+              >
+                browse
+              </strong>
+            </p>
+            <span className="upload-hint">PDF, DOCX up to 5MB</span>
+            <input
+              id="cnicBack-input"
+              type="file"
+              accept=".pdf,.docx"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                if (e.target.files.length > 0) {
+                  handleFileChange('cnicBack', e.target.files[0]);
+                }
+              }}
+            />
+            {files.cnicBack && (
+              <div style={{ marginTop: '8px', fontSize: '0.85rem', color: 'var(--primary)' }}>
+                <i className="fas fa-check-circle"></i> {files.cnicBack.name}
+              </div>
+            )}
+            {errors.cnicBack && <span className="error-message">{errors.cnicBack}</span>}
           </div>
         </div>
 
