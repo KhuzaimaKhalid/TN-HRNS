@@ -82,7 +82,7 @@ export default function Contact() {
 
         .contact-subtitle {
           font-size: 1.1rem;
-          color: var(--text-muted);
+          color: var(--text-primary);
           line-height: 1.6;
         }
 

@@ -35,10 +35,29 @@ export default function Careers() {
             ))}
           </div>
 
-          <div className="careers-footer-text">
-            <p>
-              Don’t see the right role? Send your CV to{' '}
-              <a href="mailto:hr@trustnexus.com" style={{ color: 'var(--primary)', fontWeight: 600 }}>
+          {/* ✅ Minimal fix: added inline styles for visibility */}
+          <div style={{ textAlign: 'center', marginTop: '40px' }}>
+            <p
+              style={{
+                display: 'inline-block',
+                padding: '10px 24px',
+                borderRadius: '12px',
+                backgroundColor: 'rgba(255,255,255,0.85)',
+                backdropFilter: 'blur(4px)',
+                color: 'var(--text-dark)',
+                fontSize: '1rem',
+                margin: '0 auto',
+              }}
+            >
+              Don't see the right role? Send your CV to{' '}
+              <a
+                href="mailto:hr@trustnexus.com"
+                style={{
+                  color: 'var(--primary)',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                }}
+              >
                 hr@trustnexus.com
               </a>
             </p>
@@ -114,14 +133,6 @@ export default function Careers() {
         .career-meta i {
           margin-right: 4px;
           color: var(--primary);
-        }
-
-        .careers-footer-text {
-          text-align: center;
-          font-size: 1rem;
-          color: var(--text-muted);
-          padding-top: 20px;
-          border-top: 1px solid rgba(0,0,0,0.06);
         }
 
         @media (max-width: 768px) {
