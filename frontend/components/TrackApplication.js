@@ -1,74 +1,60 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 
-export default function TrackApplication({ onClose, onNavigate }) {
+export default function TrackApplication({ candidate }) {
   const router = useRouter();
+
+  // If no candidate prop provided, use mock data for demo
+  const defaultCandidate = {
+    name: 'Ayesha Khan',
+    role: 'AI Engineer Intern',
+    appliedDate: '2nd June 2026',
+    statuses: [
+      { stage: 'Submitted', date: '02 Jun 2026', description: 'Application received' },
+      { stage: 'Under Review', date: '06 Jun 2026', description: 'Your profile is being reviewed' },
+      { stage: 'Interview Scheduled', date: '10 Jun 2026', description: 'Interview scheduled for 18 Jun' },
+      { stage: 'Selected', date: null, description: 'Decision pending' },
+    ],
+    interview: {
+      date: '18 Jun 2026',
+      day: 'Tuesday',
+      time: '04:00 PM',
+      meetLink: 'https://meet.google.com/abc-tgibc-nwl',
+    },
+    finalStatus: 'Interview Scheduled', // one of: Submitted, Under Review, Interview Scheduled, Selected, Rejected
+  };
+
+  const data = candidate || defaultCandidate;
+
   const [email, setEmail] = useState('');
   const [tracked, setTracked] = useState(false);
-  const [status, setStatus] = useState('submitted');
-  const [showInterview, setShowInterview] = useState(false);
 
   const handleTrack = (e) => {
     e.preventDefault();
     if (email) {
       setTracked(true);
-      const statuses = ['submitted', 'shortlisted', 'interview', 'selected', 'rejected'];
-      const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-      setStatus(randomStatus);
-      setShowInterview(randomStatus === 'interview');
     }
   };
 
-  const handleReset = () => {
-    setTracked(false);
-    setEmail('');
-    setShowInterview(false);
-  };
-
-  const statusData = {
-    submitted: { title: 'Application submitted', date: '02 Jul 2026', desc: 'Application received and under review' },
-    shortlisted: { title: 'Shortlisted', date: '06 Jun 2026', desc: 'Your profile matches our matching criteria' },
-    interview: { title: 'Interview', date: '18 Jun 2026', desc: 'Interview scheduled' },
-    selected: { title: 'Selected', date: '26 Jun 2026', desc: 'Congratulations! You have been selected for the position.' },
-    rejected: { title: 'Rejected', date: '18 Jun 2026', desc: 'Thank you for your interest. We have decided to proceed with other candidates.' }
-  };
-
-  const getStatuses = () => {
-    const allStatuses = ['submitted', 'shortlisted', 'interview', 'selected'];
-    if (status === 'rejected') return ['submitted', 'shortlisted', 'rejected'];
-    const idx = allStatuses.indexOf(status);
-    return allStatuses.slice(0, idx + 1);
-  };
-
-  const getStatusClass = (s) => {
-    if (status === 'rejected') {
-      if (s === 'rejected') return 'active';
-      if (s === 'submitted' || s === 'shortlisted') return 'completed';
-      return '';
-    }
-    const all = ['submitted', 'shortlisted', 'interview', 'selected'];
-    const idx = all.indexOf(s);
-    const currentIdx = all.indexOf(status);
-    if (idx < currentIdx) return 'completed';
-    if (idx === currentIdx) return 'active';
+  const getStageClass = (stage, currentStatus) => {
+    const stages = ['Submitted', 'Under Review', 'Interview Scheduled', 'Selected', 'Rejected'];
+    const currentIndex = stages.indexOf(currentStatus);
+    const stageIndex = stages.indexOf(stage);
+    if (stageIndex < currentIndex) return 'completed';
+    if (stageIndex === currentIndex) return 'active';
     return '';
   };
 
   return (
-    <div className="auth-card track-card" onClick={(e) => e.stopPropagation()}>
-      <button className="auth-close" onClick={() => onClose ? onClose() : router.push('/')}>
+    <div className="auth-card track-card">
+      <button className="auth-close" onClick={() => router.push('/')}>
         <i className="fas fa-times"></i>
       </button>
 
       <div className="track-header">
         <h1 className="auth-welcome" style={{ fontSize: '1.5rem' }}>Track your application</h1>
         <div className="track-actions">
-          <button 
-            className="btn-apply" 
-            onClick={() => onNavigate ? onNavigate('apply') : router.push('/apply')}
-          >
-            Apply now
-          </button>
+          <button className="btn-apply" onClick={() => router.push('/apply')}>Apply now</button>
           <button className="btn-apply" style={{ background: 'var(--primary)', color: 'var(--white)' }}>Track application</button>
         </div>
       </div>
@@ -94,39 +80,39 @@ export default function TrackApplication({ onClose, onNavigate }) {
         <div className="track-result">
           <div className="candidate-header">
             <div>
-              <div className="candidate-name">Ayesha Khan - AI Engineer Intern</div>
-              <div className="applied-date"><i className="far fa-calendar-alt" style={{ marginRight: '4px' }}></i>Applied on 2nd June 2025</div>
+              <div className="candidate-name">{data.name} - {data.role}</div>
+              <div className="applied-date"><i className="far fa-calendar-alt" style={{ marginRight: '4px' }}></i>Applied on {data.appliedDate}</div>
             </div>
-            <button className="btn-apply" style={{ background: 'transparent', border: '1px solid var(--border-color)' }} onClick={handleReset}>
+            <button className="btn-apply" style={{ background: 'transparent', border: '1px solid var(--border-color)' }} onClick={() => setTracked(false)}>
               <i className="fas fa-redo"></i> Reset
             </button>
           </div>
 
-          {showInterview && (
+          {/* Show interview info if status is Interview Scheduled */}
+          {data.finalStatus === 'Interview Scheduled' && data.interview && (
             <div className="interview-info-card">
               <h4><i className="fas fa-video" style={{ marginRight: '8px', color: 'var(--primary)' }}></i>Interview Information</h4>
               <p><strong>Your interview is scheduled for</strong></p>
               <div className="interview-details">
-                <div><strong>Date:</strong> 18 Jun 2025</div>
-                <div><strong>Day:</strong> Tuesday</div>
-                <div><strong>Time:</strong> 04 - 08 pm</div>
+                <div><strong>Date:</strong> {data.interview.date}</div>
+                <div><strong>Day:</strong> {data.interview.day}</div>
+                <div><strong>Time:</strong> {data.interview.time}</div>
               </div>
-              <button className="interview-add-btn">
-                <i className="fas fa-plus-circle" style={{ marginRight: '6px' }}></i> Add your interview using the group chat in the below
+              <button className="interview-add-btn" onClick={() => router.push('/interview')}>
+                <i className="fas fa-plus-circle" style={{ marginRight: '6px' }}></i> View full interview details
               </button>
             </div>
           )}
 
+          {/* Timeline */}
           <div className="timeline">
-            {getStatuses().map((s) => {
-              const data = statusData[s];
-              if (!data) return null;
-              const cls = getStatusClass(s);
+            {data.statuses.map((item, index) => {
+              const stageClass = getStageClass(item.stage, data.finalStatus);
               return (
-                <div key={s} className={`timeline-item ${cls}`}>
-                  <div className="tl-title">{data.title}</div>
-                  <div className="tl-date">{data.date}</div>
-                  <div className="tl-desc">{data.desc}</div>
+                <div key={index} className={`timeline-item ${stageClass}`}>
+                  <div className="tl-title">{item.stage}</div>
+                  <div className="tl-date">{item.date || 'Pending'}</div>
+                  <div className="tl-desc">{item.description}</div>
                 </div>
               );
             })}

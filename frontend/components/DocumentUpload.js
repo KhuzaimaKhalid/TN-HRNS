@@ -29,7 +29,8 @@ export default function DocumentUpload() {
       return;
     }
     alert('Application submitted successfully!');
-    router.push('/dashboard');
+    // Redirect to status tracker
+    router.push('/track');
   };
 
   return (

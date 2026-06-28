@@ -1551,3 +1551,59 @@ body {
 .auth-card .auth-switch {
   color: var(--text-muted);
 }
+/* ── Interview Details Card ── */
+.interview-details-card {
+  background: var(--bg-section);
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin: 16px 0 20px;
+}
+
+.interview-detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.interview-detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.detail-value {
+  color: var(--text-dark);
+  font-weight: 500;
+  text-align: right;
+}
+
+.meet-link {
+  color: var(--primary);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.meet-link:hover {
+  text-decoration: underline;
+}
+
+/* Timeline stage colors */
+.timeline-item.active .tl-title {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.timeline-item.completed .tl-title {
+  color: var(--text-muted);
+}
+
+.timeline-item .tl-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-dark);
+}
