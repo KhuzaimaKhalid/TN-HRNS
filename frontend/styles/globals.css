@@ -32,18 +32,15 @@ html, body {
 body::before {
     content: "";
     position: fixed;
-    width: 220vw;
-    height: 220vw;
-    left: 50%;
-    top: -155vw;
-    transform: translateX(-50%);
-    border-radius: 50%;
-    background: radial-gradient(circle,
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    filter: blur(2px);
+    background: radial-gradient(circle at 50% -30%,
         #ffffff 0%,
-        #ffffff 28%,
-        #00423D 42%,
-        #25625D 58%,
-        #0ED1CD 78%,
+        #ffffff 35%,
+        #06504A 55%,
+        #0a6b63 75%,
         #0ED1CD 100%
     );
     z-index: -1;
@@ -238,6 +235,7 @@ body::before {
     padding: 80px 0 90px;
     color: var(--white);
     text-align: center;
+    min-height: 40vh;
 }
 .hero h1 {
     font-size: 3.4rem;
@@ -1740,4 +1738,48 @@ body {
   .hr-main {
     padding: 16px;
   }
+}
+/* ── Remove old hero background ── */
+.hero {
+    background: transparent;  /* was gradient */
+    padding: 80px 0 90px;
+    text-align: center;
+}
+
+/* ── Hero text – now dark ── */
+.hero h1 {
+    font-size: 3.4rem;
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    margin-bottom: 16px;
+    line-height: 1.15;
+    color: #1e293b;  /* dark */
+}
+.hero h1 span {
+    color: #06504A;  /* dark teal, matches new gradient */
+}
+
+.hero p {
+    font-size: 1.2rem;
+    max-width: 720px;
+    margin: 0 auto 32px;
+    color: #1e293b;  /* dark */
+    line-height: 1.7;
+}
+
+/* ── Hero buttons – adjust for readability ── */
+.hero .btn-white {
+    background: #06504A;  /* dark teal */
+    color: #ffffff;
+}
+.hero .btn-white:hover {
+    background: #0a6b63;
+}
+
+.hero .btn-outline {
+    color: #1e293b;
+    border: 2px solid #1e293b;
+}
+.hero .btn-outline:hover {
+    background: rgba(0,0,0,0.05);
 }
