@@ -26,8 +26,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── "Everything in one place" – REMOVED ─── */}
-
       {/* ─── Join Team Section ─── */}
       <section className="join-team">
         <div className="container">

@@ -1,10 +1,10 @@
 import Layout from '@/components/Layout';
-import HomeComponent from '@/components/Home';
+import Home from '@/components/Home';
 
-export default function Home() {
+export default function Index() {
   return (
     <Layout>
-      <HomeComponent />
+      <Home />
     </Layout>
   );
 }
