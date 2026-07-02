@@ -35,66 +35,78 @@ const mockData = {
 // ─── Helper: delay for mock ──────────────────────────────────
 const delay = (ms = 800) => new Promise(resolve => setTimeout(resolve, ms));
 
+// ─── Mock Response Handler ────────────────────────────────────
+const handleMockResponse = async (endpoint, options) => {
+  await delay(600);
+
+  // Mock Login with Role Validation
+  if (endpoint.includes('/auth/login')) {
+    const body = JSON.parse(options.body);
+    const { email, password, role } = body;
+
+    if (role === 'HR' && !email.toLowerCase().includes('hr')) {
+      throw new Error('Invalid credentials for HR role. Please use an HR email.');
+    }
+    if (role === 'Employee' && email.toLowerCase().includes('hr')) {
+      throw new Error('Invalid credentials for Employee role. Please use a valid employee email.');
+    }
+    if (!email || !password) {
+      throw new Error('Email and password are required.');
+    }
+    return { success: true, token: 'mock-jwt-token', user: { role } };
+  }
+
+  if (endpoint.includes('/auth/register')) {
+    return { success: true, token: 'mock-jwt-token', user: { role: 'Employee' } };
+  }
+  if (endpoint.includes('/candidate/submit') && options.method === 'POST') {
+    return { success: true, applicationId: 'mock-app-123' };
+  }
+  if (endpoint.includes('/candidate/')) {
+    const app = mockData.applications[0];
+    return { success: true, data: app };
+  }
+  if (endpoint.includes('/candidate')) {
+    return { success: true, data: mockData.applications };
+  }
+  if (endpoint.includes('/document/upload')) {
+    return { success: true, message: 'Files uploaded successfully' };
+  }
+  if (endpoint.includes('/interview/')) {
+    return { success: true, data: mockData.applications[0].interview };
+  }
+  if (endpoint.includes('/interview/schedule')) {
+    return { success: true, message: 'Interview scheduled successfully' };
+  }
+  return { success: true, data: { message: 'Mock response' } };
+};
+
 // ─── API Call Helper ──────────────────────────────────────────
 const apiCall = async (endpoint, options = {}) => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  const headers = {
-    'Content-Type': 'application/json',
-    ...options.headers,
-  };
+  const headers = {};
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  // If we are in mock mode (or backend not available), return mock responses
-  if (!useRealApi) {
-    await delay(600);
-
-    // ─── Mock Login with Role Validation ──────────────────────
-    if (endpoint.includes('/auth/login')) {
-      const body = JSON.parse(options.body);
-      const { email, password, role } = body;
-
-      if (role === 'HR' && !email.toLowerCase().includes('hr')) {
-        throw new Error('Invalid credentials for HR role. Please use an HR email.');
-      }
-      if (role === 'Employee' && email.toLowerCase().includes('hr')) {
-        throw new Error('Invalid credentials for Employee role. Please use a valid employee email.');
-      }
-      if (!email || !password) {
-        throw new Error('Email and password are required.');
-      }
-      return { success: true, token: 'mock-jwt-token', user: { role } };
-    }
-
-    // ─── Other mock endpoints ──────────────────────────────────
-    if (endpoint.includes('/auth/register')) {
-      return { success: true, token: 'mock-jwt-token', user: { role: 'Employee' } };
-    }
-    if (endpoint.includes('/candidate/submit') && options.method === 'POST') {
-      return { success: true, applicationId: 'mock-app-123' };
-    }
-    if (endpoint.includes('/candidate/')) {
-      // Handle /candidate/:id/status
-      const app = mockData.applications[0];
-      return { success: true, data: app };
-    }
-    if (endpoint.includes('/candidate')) {
-      return { success: true, data: mockData.applications };
-    }
-    if (endpoint.includes('/document/upload')) {
-      return { success: true, message: 'Files uploaded successfully' };
-    }
-    if (endpoint.includes('/interview/')) {
-      return { success: true, data: mockData.applications[0].interview };
-    }
-    if (endpoint.includes('/interview/schedule')) {
-      return { success: true, message: 'Interview scheduled successfully' };
-    }
-    return { success: true, data: { message: 'Mock response' } };
+  // ✅ FIX 1: Prevent infinite loop – check `_mock` flag
+  if (!useRealApi || options._mock) {
+    return handleMockResponse(endpoint, options);
   }
 
-  // ─── Real API Call ──────────────────────────────────────────
+  // ✅ FIX 2: Only set JSON content-type if body is not FormData
+  if (!(options.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  const requestOptions = {
+    ...options,
+    headers: {
+      ...headers,
+      ...options.headers,
+    },
+  };
+
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, requestOptions);
     const data = await response.json();
     if (!response.ok) {
       throw new Error(data.message || 'API request failed');
@@ -102,8 +114,8 @@ const apiCall = async (endpoint, options = {}) => {
     return data;
   } catch (error) {
     console.error('API Error:', error);
-    // Fallback to mock data if real API fails
-    if (process.env.NODE_ENV === 'development') {
+    // Fallback to mock data only if not already in mock mode
+    if (!options._mock && process.env.NODE_ENV === 'development') {
       console.warn('Falling back to mock data due to API error');
       return apiCall(endpoint, { ...options, _mock: true });
     }
@@ -112,7 +124,6 @@ const apiCall = async (endpoint, options = {}) => {
 };
 
 // ─── AUTHENTICATION ROUTES ─────────────────────────────────────
-// Base: /api/auth
 export const authAPI = {
   login: (email, password, role) =>
     apiCall('/auth/login', {
@@ -129,7 +140,6 @@ export const authAPI = {
 };
 
 // ─── CANDIDATE ROUTES ──────────────────────────────────────────
-// Base: /api/candidate
 export const applicationAPI = {
   submit: (data) =>
     apiCall('/candidate/submit', {
@@ -142,23 +152,21 @@ export const applicationAPI = {
 };
 
 // ─── DOCUMENT ROUTES ──────────────────────────────────────────
-// Base: /api/document
 export const uploadAPI = {
   uploadDocuments: (files) => {
     const formData = new FormData();
     Object.keys(files).forEach(key => {
       if (files[key]) formData.append(key, files[key]);
     });
+    // ✅ FIX 2: Removed hardcoded Content-Type header
     return apiCall('/document/upload', {
       method: 'POST',
       body: formData,
-      headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
 };
 
 // ─── INTERVIEW ROUTES ──────────────────────────────────────────
-// Base: /api/interview
 export const interviewAPI = {
   getDetails: (applicationId) =>
     apiCall(`/interview/${applicationId}`),

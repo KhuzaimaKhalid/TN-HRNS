@@ -1,71 +1,63 @@
 import HRLayout from '@/components/HRLayout';
+import HRPageLayout from '@/components/HRPageLayout';
 
 export default function Calendar() {
+  const colors = {
+    primary: '#007A7C',
+    lightTeal: '#E8F5F5',
+    border: '#020a14',
+    textDark: '#1A1A1A',
+    textGray: '#666666',
+  };
+
   const interviews = [
-    { candidate: 'Sana Alawari', position: 'AI/3D Designer', date: '25 Jun, 23:00pm', venue: 'Apartment A, Block A', mode: 'Video call' },
-    { candidate: 'Younis Alawari', position: 'Business Developer', date: '25 Jun, 4:00pm', venue: 'Block B', mode: 'Email' },
-    { candidate: 'Younis Alawari', position: 'QA Engineer', date: '25 Jun, 6:00pm', venue: 'Apartment B', mode: 'Video call' },
-    { candidate: 'Younis Alawari', position: 'UI/UX Designer', date: '25 Jun, 9:00pm', venue: 'Apartment C, Block B', mode: 'Video call' },
+    { candidate: 'Sana Kareem', role: 'Frontend Developer', date: 'Wed, 25 Jun', time: '02:00 PM' },
+    { candidate: 'Rana Aslam', role: 'AI Engineer', date: 'Wed, 25 Jun', time: '03:00 PM' },
+    { candidate: 'Ali Hassan', role: 'Backend Developer', date: 'Thu, 26 Jun', time: '10:00 AM' },
   ];
 
   return (
     <HRLayout>
-      <div className="calendar-page" style={{ padding: '20px 0' }}>
-        <div className="container" style={{ padding: '0 24px' }}>
-          <div className="page-header" style={{ marginBottom: '24px' }}>
-            <h1 className="page-title" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--text-primary)' }}>Calendar</h1>
-            <p className="page-subtitle" style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>Sera Afsaf · HR</p>
-          </div>
-
-          {/* Month View */}
-          <div className="calendar-card" style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(4px)', borderRadius: '16px', padding: '24px', border: '1px solid rgba(255,255,255,0.3)', marginBottom: '24px' }}>
-            <div className="calendar-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h2 style={{ fontSize: '1.3rem', fontWeight: 600, color: 'var(--text-primary)' }}>June 2026</h2>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button className="btn btn-ghost" style={{ padding: '4px 12px' }}>←</button>
-                <button className="btn btn-ghost" style={{ padding: '4px 12px' }}>→</button>
-              </div>
-            </div>
-            <div className="calendar-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '4px' }}>
-              {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
-                <div key={d} className="calendar-day-header" style={{ fontWeight: 600, color: 'var(--text-muted)', textAlign: 'center', padding: '8px 0' }}>{d}</div>
+      <HRPageLayout title="Calendar">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+          <div style={{ background: 'white', border: `1px solid ${colors.border}`, borderRadius: '16px', padding: '24px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 600, color: colors.textDark, marginBottom: '16px' }}>June 2026</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px', textAlign: 'center' }}>
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                <div key={day} style={{ fontWeight: 600, color: colors.textGray, padding: '8px 0' }}>{day}</div>
               ))}
-              {[31,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,1,2,3,4].map((d,i) => (
-                <div key={i} className={`calendar-day ${d === 25 ? 'has-event' : ''}`} style={{ textAlign: 'center', padding: '8px 0', borderRadius: '8px', color: 'var(--text-dark)', background: d === 25 ? 'var(--bg-light)' : 'transparent', fontWeight: d === 25 ? 600 : 'normal' }}>
-                  {d}
+              {Array.from({ length: 30 }, (_, i) => i + 1).map(day => (
+                <div key={day} style={{ padding: '8px 0', borderRadius: '8px', cursor: 'pointer', background: day === 25 ? colors.lightTeal : 'transparent', fontWeight: day === 25 ? 600 : 400 }}>
+                  {day}
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Upcoming Interviews */}
-          <div className="dashboard-card" style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(4px)', borderRadius: '16px', padding: '24px', border: '1px solid rgba(255,255,255,0.3)' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '12px' }}>Upcoming Interviews</h3>
-            <table className="interview-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
-              <thead>
-                <tr>
-                  <th style={{ textAlign: 'left', padding: '8px 0', color: 'var(--text-muted)', borderBottom: '1px solid #f0f3f2' }}>Candidates</th>
-                  <th style={{ textAlign: 'left', padding: '8px 0', color: 'var(--text-muted)', borderBottom: '1px solid #f0f3f2' }}>Positions</th>
-                  <th style={{ textAlign: 'left', padding: '8px 0', color: 'var(--text-muted)', borderBottom: '1px solid #f0f3f2' }}>Dates & Times</th>
-                  <th style={{ textAlign: 'left', padding: '8px 0', color: 'var(--text-muted)', borderBottom: '1px solid #f0f3f2' }}>Venues</th>
-                  <th style={{ textAlign: 'left', padding: '8px 0', color: 'var(--text-muted)', borderBottom: '1px solid #f0f3f2' }}>Mode</th>
-                </tr>
-              </thead>
-              <tbody>
-                {interviews.map((item, i) => (
-                  <tr key={i}>
-                    <td style={{ padding: '10px 0', borderBottom: '1px solid #f0f3f2', color: 'var(--text-dark)' }}>{item.candidate}</td>
-                    <td style={{ padding: '10px 0', borderBottom: '1px solid #f0f3f2', color: 'var(--text-dark)' }}>{item.position}</td>
-                    <td style={{ padding: '10px 0', borderBottom: '1px solid #f0f3f2', color: 'var(--text-dark)' }}>{item.date}</td>
-                    <td style={{ padding: '10px 0', borderBottom: '1px solid #f0f3f2', color: 'var(--text-dark)' }}>{item.venue}</td>
-                    <td style={{ padding: '10px 0', borderBottom: '1px solid #f0f3f2', color: 'var(--text-dark)' }}>{item.mode}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div style={{ background: 'white', border: `1px solid ${colors.border}`, borderRadius: '16px', padding: '24px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 600, color: colors.textDark, marginBottom: '16px' }}>Upcoming Interviews</h2>
+            {interviews.map((item, idx) => (
+              <div key={idx} style={{ padding: '12px 0', borderBottom: idx < interviews.length - 1 ? `1px solid ${colors.border}` : 'none' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 500, color: colors.textDark }}>{item.candidate}</h4>
+                    <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: colors.textGray }}>{item.role}</p>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <span style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: colors.primary }}>{item.date}</span>
+                    <span style={{ fontSize: '12px', color: colors.textGray }}>{item.time}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+            <div style={{ marginTop: '16px' }}>
+              <button style={{ backgroundColor: colors.primary, color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', width: '100%', cursor: 'pointer', fontFamily: "'Poppins', sans-serif", fontWeight: 500 }}>
+                Schedule New Interview
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </HRPageLayout>
     </HRLayout>
   );
 }

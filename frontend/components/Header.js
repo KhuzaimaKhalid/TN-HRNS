@@ -22,6 +22,7 @@ export default function Header() {
   return (
     <header className="header">
       <div className="container">
+        {/* Logo */}
         <div className="logo" onClick={() => navigate('/')}>
           <div className="tn-logo">
             <span className="tn-logo-text">TN</span>
@@ -29,6 +30,7 @@ export default function Header() {
           TrustNexus-<span>HRMS</span>
         </div>
 
+        {/* Navigation Links */}
         <ul className="nav-links">
           <li><a onClick={() => navigate('/')}>Home</a></li>
           <li><a onClick={() => navigate('/features')}>Features</a></li>
@@ -36,6 +38,7 @@ export default function Header() {
           <li><a onClick={() => navigate('/contact')}>Contact</a></li>
         </ul>
 
+        {/* Logout (only when logged in) */}
         <div className="nav-actions">
           {isLoggedIn && (
             <button className="btn btn-outline" onClick={handleLogout}>

@@ -1,10 +1,10 @@
 import { useRouter } from 'next/router';
-import Header from './Header';
+// import Header from './Header';  // ❌ removed
 import Footer from './Footer';
 
 export default function HRLayout({ children }) {
   const router = useRouter();
-  
+
   const navItems = [
     { name: 'Dashboard', path: '/hr-dashboard', icon: 'fa-chart-pie' },
     { name: 'Calendar', path: '/calendar', icon: 'fa-calendar-alt' },
@@ -15,7 +15,7 @@ export default function HRLayout({ children }) {
 
   return (
     <div className="hr-layout">
-      <Header />
+      {/* Header removed – now only sidebar + content */}
       <div className="hr-body">
         <aside className="hr-sidebar">
           <div className="sidebar-profile">
