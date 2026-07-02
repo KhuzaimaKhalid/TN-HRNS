@@ -38,9 +38,9 @@ body::before {
     filter: blur(2px);
     background: radial-gradient(circle at 50% -30%,
         #ffffff 0%,
-        #ffffff 35%,
-        #06504A 55%,
-        #0a6b63 75%,
+        #ffffff 25%,
+        #06504A 51%,
+        #0a6b63 63%,
         #0ED1CD 100%
     );
     z-index: -1;
