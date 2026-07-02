@@ -1,4 +1,3 @@
-// pages/register.js
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/context/AuthContext';
@@ -6,7 +5,7 @@ import Footer from '@/components/Footer';
 import Button from '@/components/common/Button';
 import Input from '@/components/common/Input';
 
-export default function Register() {
+export default function Register() {   // ✅ default export
   const router = useRouter();
   const { register, loading } = useAuth();
   const [form, setForm] = useState({ fullName: '', email: '', password: '', confirmPassword: '' });
@@ -44,18 +43,61 @@ export default function Register() {
     <div className="auth-page">
       <div className="auth-wrapper">
         <div className="auth-card">
-          <button className="auth-close" onClick={() => router.push('/')}><i className="fas fa-times"></i></button>
+          <button className="auth-close" onClick={() => router.push('/')}>
+            <i className="fas fa-times"></i>
+          </button>
+
           <h1 className="auth-welcome">Create Account</h1>
           <p className="auth-subtitle">Join Trust Nexus and start managing your workforce.</p>
 
-          <Input label="Full Name" type="text" placeholder="John Doe" value={form.fullName} onChange={(e) => setForm({...form, fullName: e.target.value})} error={errors.fullName} />
-          <Input label="Email Address" type="email" placeholder="name@email.com" value={form.email} onChange={(e) => setForm({...form, email: e.target.value})} error={errors.email} />
-          <Input label="Password" type="password" placeholder="••••••" value={form.password} onChange={(e) => setForm({...form, password: e.target.value})} error={errors.password} />
-          <Input label="Confirm Password" type="password" placeholder="••••••" value={form.confirmPassword} onChange={(e) => setForm({...form, confirmPassword: e.target.value})} error={errors.confirmPassword} />
+          <Input
+            label="Full Name"
+            type="text"
+            placeholder="John Doe"
+            value={form.fullName}
+            onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+            error={errors.fullName}
+          />
 
-          {apiError && <div className="error-message" style={{ textAlign: 'center', marginBottom: '12px' }}>{apiError}</div>}
+          <Input
+            label="Email Address"
+            type="email"
+            placeholder="name@email.com"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            error={errors.email}
+          />
 
-          <Button variant="primary" loading={loading} onClick={handleSubmit} style={{ width: '100%' }}>Create Account</Button>
+          <Input
+            label="Password"
+            type="password"
+            placeholder="••••••"
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            error={errors.password}
+          />
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '-8px', marginBottom: '12px' }}>
+            Minimum 6 characters
+          </div>
+
+          <Input
+            label="Confirm Password"
+            type="password"
+            placeholder="••••••"
+            value={form.confirmPassword}
+            onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+            error={errors.confirmPassword}
+          />
+
+          {apiError && (
+            <div className="error-message" style={{ textAlign: 'center', marginBottom: '12px' }}>
+              {apiError}
+            </div>
+          )}
+
+          <Button variant="primary" loading={loading} onClick={handleSubmit} style={{ width: '100%' }}>
+            Create Account
+          </Button>
 
           <div className="auth-switch">
             Already have an account? <a onClick={() => router.push('/login')}>Login</a>

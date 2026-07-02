@@ -1,7 +1,12 @@
+// components/Dashboard.js
 import { useRouter } from 'next/router';
+import { useAuth } from '@/context/AuthContext';
+import Badge from '@/components/common/Badge';
 
 export default function Dashboard() {
   const router = useRouter();
+  const { user } = useAuth();
+  const userName = user?.name || 'User';
 
   const applicationStatus = 'Interview';
   const appliedDate = '2nd June 2026';
@@ -20,11 +25,10 @@ export default function Dashboard() {
   return (
     <div className="dashboard-page">
       <div className="container">
-        {/* ✅ Dashboard Header – now with clear visibility */}
         <div className="dashboard-header" style={{ background: 'rgba(255,255,255,0.7)', borderRadius: '16px', padding: '24px', backdropFilter: 'blur(4px)' }}>
           <div>
             <h1 className="dashboard-welcome" style={{ color: 'var(--text-primary)' }}>
-              Welcome back, Ayesha! 😊
+              Welcome back, {userName}! 😊
             </h1>
             <p className="dashboard-subtitle" style={{ color: 'var(--text-dark)' }}>
               Here's what's happening with your applications.
@@ -93,9 +97,7 @@ export default function Dashboard() {
               </div>
               <div className="status-item">
                 <span className="status-label">Current Status</span>
-                <span className={`status-badge ${applicationStatus.toLowerCase()}`}>
-                  {applicationStatus}
-                </span>
+                <Badge status={applicationStatus} />
               </div>
               <button className="btn btn-primary" style={{ width: '100%', marginTop: '12px' }} onClick={() => router.push('/track')}>
                 View Full Status

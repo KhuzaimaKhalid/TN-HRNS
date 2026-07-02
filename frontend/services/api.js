@@ -1,6 +1,5 @@
 // services/api.js
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://trustnexus-internship.vercel.app/api';
-
 const useRealApi = process.env.NEXT_PUBLIC_USE_REAL_API === 'true';
 
 // ─── Mock Data ──────────────────────────────────────────────────
@@ -87,12 +86,12 @@ const apiCall = async (endpoint, options = {}) => {
   const headers = {};
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  // ✅ FIX 1: Prevent infinite loop – check `_mock` flag
+  // Prevent infinite loop – check `_mock` flag
   if (!useRealApi || options._mock) {
     return handleMockResponse(endpoint, options);
   }
 
-  // ✅ FIX 2: Only set JSON content-type if body is not FormData
+  // Only set JSON content-type if body is not FormData
   if (!(options.body instanceof FormData)) {
     headers['Content-Type'] = 'application/json';
   }
@@ -124,6 +123,7 @@ const apiCall = async (endpoint, options = {}) => {
 };
 
 // ─── AUTHENTICATION ROUTES ─────────────────────────────────────
+// Base: /api/auth
 export const authAPI = {
   login: (email, password, role) =>
     apiCall('/auth/login', {
@@ -140,6 +140,7 @@ export const authAPI = {
 };
 
 // ─── CANDIDATE ROUTES ──────────────────────────────────────────
+// Base: /api/candidate
 export const applicationAPI = {
   submit: (data) =>
     apiCall('/candidate/submit', {
@@ -152,13 +153,13 @@ export const applicationAPI = {
 };
 
 // ─── DOCUMENT ROUTES ──────────────────────────────────────────
+// Base: /api/document
 export const uploadAPI = {
   uploadDocuments: (files) => {
     const formData = new FormData();
     Object.keys(files).forEach(key => {
       if (files[key]) formData.append(key, files[key]);
     });
-    // ✅ FIX 2: Removed hardcoded Content-Type header
     return apiCall('/document/upload', {
       method: 'POST',
       body: formData,
@@ -167,6 +168,7 @@ export const uploadAPI = {
 };
 
 // ─── INTERVIEW ROUTES ──────────────────────────────────────────
+// Base: /api/interview
 export const interviewAPI = {
   getDetails: (applicationId) =>
     apiCall(`/interview/${applicationId}`),
