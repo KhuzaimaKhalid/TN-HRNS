@@ -40,8 +40,9 @@ body::before {
         #ffffff 0%,
         #ffffff 25%,
         #06504A 51%,
-        #0a6b63 63%,
-        #0ED1CD 100%
+        #0a6b63 67%,
+        #0ED1CD 87%
+        
     );
     z-index: -1;
     pointer-events: none;
