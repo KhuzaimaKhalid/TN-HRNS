@@ -9,15 +9,15 @@ import Badge from '@/components/common/Badge';
 // Fallback mock data (used if API fails or returns empty)
 const fallbackData = {
   stats: { total: 3, inProgress: 1, selected: 0, rejected: 0 },
-  status: { 
-    position: 'AI Engineer Intern', 
-    appliedDate: '2nd June 2026', 
-    current: 'Interview' 
+  status: {
+    position: 'AI Engineer Intern',
+    appliedDate: '2nd June 2026',
+    current: 'Interview'
   },
-  interview: { 
-    date: '18 Jun 2026', 
-    day: 'Tuesday', 
-    time: '04 - 08 pm' 
+  interview: {
+    date: '18 Jun 2026',
+    day: 'Tuesday',
+    time: '04 - 08 pm'
   },
   notifications: [
     { id: 1, message: 'Your application has been shortlisted', date: '2 days ago', read: false },
@@ -63,11 +63,11 @@ export default function Dashboard() {
         <div className="container">
           {/* Error banner if any */}
           {error && (
-            <div style={{ 
-              background: '#fff3cd', 
-              color: '#856404', 
-              padding: '12px 20px', 
-              borderRadius: '12px', 
+            <div style={{
+              background: '#fff3cd',
+              color: '#856404',
+              padding: '12px 20px',
+              borderRadius: '12px',
               marginBottom: '20px',
               textAlign: 'center'
             }}>
@@ -78,7 +78,9 @@ export default function Dashboard() {
 
           <div className="dashboard-header" style={{ background: 'rgba(255,255,255,0.7)', borderRadius: '16px', padding: '24px', backdropFilter: 'blur(4px)' }}>
             <div>
-              <h1 className="dashboard-welcome" style={{ color: 'var(--text-primary)' }}>Welcome back, Ayesha! 😊</h1>
+              <h1 className="dashboard-welcome" style={{ color: 'var(--text-primary)' }}>
+                Welcome back, {info.name ?? 'there'}! 😊
+              </h1>
               <p className="dashboard-subtitle" style={{ color: 'var(--text-dark)' }}>Here's what's happening with your applications.</p>
             </div>
             <div className="dashboard-actions">

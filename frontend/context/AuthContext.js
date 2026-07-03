@@ -27,9 +27,21 @@ export const AuthProvider = ({ children }) => {
       setError(null);
       setLoading(true);
       const response = await authAPI.login(email, password, role);
-      const { token, user: userData } = response;
-      const fullUserData = { ...userData, name: userData.name || email.split('@')[0] };
+      const { token } = response;
+      if (!token) {
+        throw new Error('Login succeeded but token is missing from the response.');
+      }
+      // Store token immediately so that subsequent API calls are authenticated
       localStorage.setItem('token', token);
+  
+      // Now fetch the user profile using the token
+      const profileResponse = await authAPI.getProfile();
+      // Assuming getProfile returns { user: { ... } } or directly the user object
+      const userData = profileResponse.user || profileResponse;
+      if (!userData) {
+        throw new Error('Profile data missing after login.');
+      }
+      const fullUserData = { ...userData, name: userData.name || email.split('@')[0] };
       localStorage.setItem('userData', JSON.stringify(fullUserData));
       localStorage.setItem('userRole', fullUserData.role || role);
       setUser(fullUserData);

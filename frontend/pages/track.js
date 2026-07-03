@@ -14,23 +14,22 @@ export default function Track() {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
 
-  const handleTrack = async (e) => {
-    e.preventDefault();
-    if (!email) return;
-    setLoading(true);
-    setError('');
-    try {
-      // In real scenario, we'd fetch by email or application ID
-      // For demo, we use mock data from API service
-      const response = await applicationAPI.getStatus('mock-id');
+// track.js
+const handleTrack = async (e) => {
+  e.preventDefault();
+  if (!email) return;
+  setLoading(true);
+  setError('');
+  try {
+      const response = await applicationAPI.getStatusByEmail(email);
       setData(response.data);
       setTracked(true);
-    } catch (err) {
+  } catch (err) {
       setError(err.message || 'Failed to fetch status');
-    } finally {
+  } finally {
       setLoading(false);
-    }
-  };
+  }
+};
 
   return (
     <div className="auth-page">
