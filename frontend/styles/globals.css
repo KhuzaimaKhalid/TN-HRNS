@@ -2120,3 +2120,13 @@ body {
         padding: 6px 16px;
     }
 }
+.hr-sidebar {
+  width: 260px;
+  background: #008080;   /* ✅ darker teal (was #06504A) */
+  color: #ffffff;
+  padding: 24px 0;
+  flex-shrink: 0;
+  min-height: calc(100vh - 140px);
+  display: flex;
+  flex-direction: column;
+}
