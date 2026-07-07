@@ -17,7 +17,7 @@ export default function HRPageLayout({ title, children }) {
   return (
     <div style={{
       fontFamily: "'Poppins', sans-serif",
-      backgroundColor: colors.bg,
+      backgroundColor: '#effbfb',
       minHeight: '100vh',
       padding: 'clamp(16px, 4vw, 40px)',
       boxSizing: 'border-box'

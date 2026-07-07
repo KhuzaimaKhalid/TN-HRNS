@@ -2130,3 +2130,7 @@ body {
   display: flex;
   flex-direction: column;
 }
+/* ── HR Pages Background ── */
+.hr-main {
+  background: #effbfb; /* new background color */
+}
