@@ -1,57 +1,388 @@
+// pages/leave-management.js
+import { useState } from 'react';
 import HRLayout from '@/components/HRLayout';
 import HRPageLayout from '@/components/HRPageLayout';
 
 export default function LeaveManagement() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedLeaveId, setSelectedLeaveId] = useState(null); // panel opens only when a row is clicked
+
+  // ─── Sample Leave Data ──────────────────────────────────────
+  const [leaves, setLeaves] = useState([
+    {
+      id: 1,
+      employee: 'Raheel Khan',
+      role: 'HR',
+      type: 'Sick leave',
+      dates: '26 July 2025 - 28 July 2025',
+      duration: '3 days',
+      status: 'Approved by CFO',
+      note: "Traveling to attend wedding on urgent notice, requires manual signing during return.",
+    },
+    {
+      id: 2,
+      employee: 'Raheel Khan',
+      role: 'HR',
+      type: 'Annual leave',
+      dates: '26 July 2025 - 28 July 2025',
+      duration: '3 days',
+      status: 'Newly Added',
+      note: 'Annual leave request submitted for review.',
+    },
+    {
+      id: 3,
+      employee: 'Raheel Khan',
+      role: 'HR',
+      type: 'Casual leave',
+      dates: '26 July 2025 - 28 July 2025',
+      duration: '3 days',
+      status: 'Declined by HR',
+      note: 'Casual leave request was declined by HR.',
+    },
+    {
+      id: 4,
+      employee: 'Raheel Khan',
+      role: 'HR',
+      type: 'Sick leave',
+      dates: '26 July 2025 - 28 July 2025',
+      duration: '3 days',
+      status: 'with CFO',
+      note: 'Currently pending approval with CFO.',
+    },
+  ]);
+
+  // ─── Filtered Data ──────────────────────────────────────────
+  const filteredLeaves = leaves.filter((leave) =>
+    leave.employee.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    leave.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    leave.status.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const selectedLeave = leaves.find((l) => l.id === selectedLeaveId) || null;
+
+  // ─── Status Badge Color ────────────────────────────────────
+  const getStatusBadge = (status) => {
+    if (status.toLowerCase().includes('approved')) {
+      return { bg: '#d4edda', color: '#1e7e34', label: status };
+    }
+    if (status.toLowerCase().includes('declined')) {
+      return { bg: '#f8d7da', color: '#c0392b', label: status };
+    }
+    if (status.toLowerCase().includes('newly added')) {
+      return { bg: '#ffe8cc', color: '#c2660c', label: status };
+    }
+    if (status.toLowerCase().includes('with')) {
+      return { bg: '#fff3cd', color: '#856404', label: status };
+    }
+    return { bg: '#e9ecef', color: '#495057', label: status };
+  };
+
+  const handleDecline = (id) => {
+    setLeaves((prev) =>
+      prev.map((l) => (l.id === id ? { ...l, status: 'Declined by HR' } : l))
+    );
+  };
+
+  const handleApprove = (id) => {
+    setLeaves((prev) =>
+      prev.map((l) => (l.id === id ? { ...l, status: 'with CFO' } : l))
+    );
+  };
+
   const colors = {
     primary: '#007A7C',
     border: '#020a14',
     textDark: '#1A1A1A',
     textGray: '#666666',
-    green: '#2F8A4B',
-    danger: '#dc3545',
+    bg: '#effbfb',
+    cardBg: '#FFFFFF',
+    lightTeal: '#E8F5F5',
   };
-
-  const leaves = [
-    { name: 'Usman Farooq', type: 'Annual leave', days: 5, period: 'Jul 1-5', status: 'Pending' },
-    { name: 'Zara Hashmi', type: 'Sick leave', days: 2, period: 'Jun 27-28', status: 'Pending' },
-    { name: 'Ali Ahmed', type: 'Casual leave', days: 1, period: 'Jun 30', status: 'Approved' },
-  ];
 
   return (
     <HRLayout>
-      <HRPageLayout title="Leave Management">
-        <div style={{ background: 'white', border: `1px solid ${colors.border}`, borderRadius: '16px', padding: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: 600, color: colors.textDark, margin: 0 }}>Pending Leave Requests</h2>
-            <button style={{ backgroundColor: colors.primary, color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontFamily: "'Poppins', sans-serif", fontWeight: 500 }}>
-              + New Request
-            </button>
-          </div>
-          {leaves.filter(l => l.status === 'Pending').map((item, idx) => (
-            <div key={idx} style={{ padding: '16px 0', borderBottom: idx < leaves.filter(l => l.status === 'Pending').length - 1 ? `1px solid ${colors.border}` : 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 500, color: colors.textDark }}>{item.name}</h4>
-                <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: colors.textGray }}>{item.type} • {item.days} days • {item.period}</p>
-              </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button style={{ background: colors.green, border: 'none', color: 'white', padding: '4px 16px', borderRadius: '6px', cursor: 'pointer', fontFamily: "'Poppins', sans-serif" }}>Approve</button>
-                <button style={{ background: colors.danger, border: 'none', color: 'white', padding: '4px 16px', borderRadius: '6px', cursor: 'pointer', fontFamily: "'Poppins', sans-serif" }}>Reject</button>
-              </div>
-            </div>
-          ))}
-          {leaves.filter(l => l.status === 'Pending').length === 0 && (
-            <p style={{ textAlign: 'center', color: colors.textGray, padding: '20px 0' }}>No pending requests</p>
-          )}
-          <div style={{ marginTop: '16px', borderTop: `1px solid ${colors.border}`, paddingTop: '16px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 600, color: colors.textDark, marginBottom: '12px' }}>Approved / History</h3>
-            {leaves.filter(l => l.status === 'Approved').map((item, idx) => (
-              <div key={idx} style={{ padding: '8px 0', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between' }}>
-                <span>{item.name} – {item.type}</span>
-                <span style={{ color: colors.textGray }}>{item.period}</span>
-              </div>
-            ))}
-          </div>
+      <HRPageLayout title="Leave management">
+        {/* ─── Search Bar ────────────────────────────────────── */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          background: colors.cardBg,
+          border: `1px solid ${colors.border}`,
+          borderRadius: '8px',
+          padding: '4px 4px 4px 16px',
+          marginBottom: '24px',
+          maxWidth: '500px',
+        }}>
+          <i className="fas fa-search" style={{ color: colors.textGray, fontSize: '14px', marginRight: '8px' }}></i>
+          <input
+            type="text"
+            placeholder="Search projects, tasks, or clients."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              border: 'none',
+              outline: 'none',
+              padding: '10px 12px',
+              flex: 1,
+              fontFamily: "'Poppins', sans-serif",
+              fontSize: '14px',
+              color: colors.textDark,
+              background: 'transparent',
+            }}
+          />
+          <button
+            style={{
+              backgroundColor: colors.primary,
+              color: 'white',
+              border: 'none',
+              padding: '8px 20px',
+              borderRadius: '6px',
+              fontWeight: 500,
+              cursor: 'pointer',
+              fontFamily: "'Poppins', sans-serif",
+            }}
+          >
+            Search
+          </button>
         </div>
+
+        {/* ─── Main Content: Table + Side Panel ─────────────── */}
+        <div style={{
+          display: 'flex',
+          gap: '20px',
+          alignItems: 'flex-start',
+        }}>
+          {/* Table */}
+          <div style={{
+            background: colors.cardBg,
+            border: `1px solid ${colors.border}`,
+            borderRadius: '12px',
+            overflow: 'hidden',
+            flex: 1,
+          }}>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{
+                width: '100%',
+                borderCollapse: 'collapse',
+                fontFamily: "'Poppins', sans-serif",
+              }}>
+                <thead>
+                  <tr style={{
+                    background: '#e9edf0',
+                  }}>
+                    <th style={{
+                      padding: '14px 16px',
+                      textAlign: 'left',
+                      fontWeight: 600,
+                      color: colors.textDark,
+                      fontSize: '14px',
+                    }}>
+                      Employee
+                    </th>
+                    <th style={{
+                      padding: '14px 16px',
+                      textAlign: 'left',
+                      fontWeight: 600,
+                      color: colors.textDark,
+                      fontSize: '14px',
+                    }}>
+                      Type
+                    </th>
+                    <th style={{
+                      padding: '14px 16px',
+                      textAlign: 'left',
+                      fontWeight: 600,
+                      color: colors.textDark,
+                      fontSize: '14px',
+                    }}>
+                      Dates
+                    </th>
+                    <th style={{
+                      padding: '14px 16px',
+                      textAlign: 'left',
+                      fontWeight: 600,
+                      color: colors.textDark,
+                      fontSize: '14px',
+                    }}>
+                      Duration
+                    </th>
+                    <th style={{
+                      padding: '14px 16px',
+                      textAlign: 'left',
+                      fontWeight: 600,
+                      color: colors.textDark,
+                      fontSize: '14px',
+                    }}>
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredLeaves.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" style={{
+                        padding: '48px 20px',
+                        textAlign: 'center',
+                        color: colors.textDark,
+                        fontSize: '15px',
+                      }}>
+                        There are no leaves here yet
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredLeaves.map((leave, index) => {
+                      const statusInfo = getStatusBadge(leave.status);
+                      const isSelected = leave.id === selectedLeaveId;
+                      return (
+                        <tr
+                          key={leave.id}
+                          onClick={() => setSelectedLeaveId((prev) => (prev === leave.id ? null : leave.id))}
+                          style={{
+                            borderBottom: index < filteredLeaves.length - 1 ? `1px solid #eee` : 'none',
+                            background: isSelected ? colors.lightTeal : 'transparent',
+                            cursor: 'pointer',
+                            transition: 'background 0.15s',
+                          }}
+                          onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.background = '#f8f9fa'; }}
+                          onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}
+                        >
+                          <td style={{
+                            padding: '12px 16px',
+                            color: colors.textDark,
+                            fontSize: '14px',
+                            fontWeight: 500,
+                          }}>
+                            {leave.employee}
+                          </td>
+                          <td style={{
+                            padding: '12px 16px',
+                            color: colors.textDark,
+                            fontSize: '14px',
+                          }}>
+                            {leave.type}
+                          </td>
+                          <td style={{
+                            padding: '12px 16px',
+                            color: colors.textDark,
+                            fontSize: '14px',
+                          }}>
+                            {leave.dates}
+                          </td>
+                          <td style={{
+                            padding: '12px 16px',
+                            color: colors.textDark,
+                            fontSize: '14px',
+                          }}>
+                            {leave.duration}
+                          </td>
+                          <td style={{
+                            padding: '12px 16px',
+                          }}>
+                            <span style={{
+                              background: statusInfo.bg,
+                              color: statusInfo.color,
+                              padding: '4px 14px',
+                              borderRadius: '20px',
+                              fontSize: '12px',
+                              fontWeight: 500,
+                              display: 'inline-block',
+                              whiteSpace: 'nowrap',
+                            }}>
+                              {statusInfo.label}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Side Panel: Employee Detail Card */}
+          {selectedLeave && (
+            <div style={{
+              width: '260px',
+              flexShrink: 0,
+              background: colors.cardBg,
+              border: `1px solid ${colors.border}`,
+              borderRadius: '12px',
+              padding: '20px',
+              fontFamily: "'Poppins', sans-serif",
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              textAlign: 'center',
+            }}>
+              <div style={{
+                width: '70px',
+                height: '70px',
+                borderRadius: '50%',
+                background: colors.lightTeal,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '12px',
+                fontSize: '24px',
+                fontWeight: 600,
+                color: colors.primary,
+              }}>
+                {selectedLeave.employee.split(' ').map((n) => n[0]).join('')}
+              </div>
+              <div style={{ fontWeight: 600, fontSize: '15px', color: colors.textDark }}>
+                {selectedLeave.employee}
+              </div>
+              <div style={{ fontSize: '13px', color: colors.textGray, marginBottom: '12px' }}>
+                {selectedLeave.role}
+              </div>
+              <p style={{
+                fontSize: '12.5px',
+                color: colors.textGray,
+                lineHeight: 1.5,
+                marginBottom: '20px',
+              }}>
+                {selectedLeave.note}
+              </p>
+
+              <button
+                onClick={() => handleDecline(selectedLeave.id)}
+                style={{
+                  width: '100%',
+                  background: '#e74c3c',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '10px 0',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  marginBottom: '10px',
+                }}
+              >
+                Decline
+              </button>
+              <button
+                onClick={() => handleApprove(selectedLeave.id)}
+                style={{
+                  width: '100%',
+                  background: colors.primary,
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '10px 0',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                }}
+              >
+                Approve & Forward to CFO
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* ─── Footer: + Create Project – REMOVED ────────────── */}
       </HRPageLayout>
     </HRLayout>
   );
