@@ -1,65 +1,103 @@
-// pages/calendar.js
-import { useState } from 'react';
+'use client';
+
+import { useEffect, useState } from 'react';
 import HRLayout from '@/components/HRLayout';
 import HRPageLayout from '@/components/HRPageLayout';
-import ScheduleInterviewModal from '@/components/common/ScheduleInterviewModal';
+import { interviewAPI } from '@/services/api';
 
 export default function Calendar() {
-  const [showScheduleModal, setShowScheduleModal] = useState(false);
-  const [candidates] = useState(['Sana Kareem', 'Rana Aslam', 'Ali Hassan']); // mock candidates
-
-  const handleSchedule = (data) => {
-    console.log('Scheduling interview:', data);
-    // In future: API call to schedule interview
-    alert(`Interview scheduled for ${data.candidate} on ${data.date} at ${data.time} (${data.mode}) with ${data.interviewer}`);
-  };
-
-  const interviews = [
-    { candidate: 'Sana Kareem', role: 'Frontend Developer', date: 'Wed, 25 Jun', time: '02:00 PM' },
-    { candidate: 'Rana Aslam', role: 'AI Engineer', date: 'Wed, 25 Jun', time: '03:00 PM' },
-    { candidate: 'Ali Hassan', role: 'Backend Developer', date: 'Thu, 26 Jun', time: '10:00 AM' },
-  ];
-
   const colors = {
     primary: '#007A7C',
+    lightTeal: '#E8F5F5',
     border: '#020a14',
     textDark: '#1A1A1A',
     textGray: '#666666',
-    bg: '#effbfb',
-    cardBg: '#FFFFFF',
-    lightTeal: '#E8F5F5',
   };
+
+  const [interviews, setInterviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchInterviews = async () => {
+      try {
+        const res = await interviewAPI.getUpcoming();
+        if (!isMounted) return;
+
+        const rows = res?.interviews || [];
+        const formatted = rows.map((row) => {
+          const dateObj = new Date(row.scheduled_date);
+          const dateLabel = dateObj.toLocaleDateString('en-US', {
+            weekday: 'short',
+            day: '2-digit',
+            month: 'short',
+          });
+
+          return {
+            candidate: row.name,
+            role: row.applied_position,
+            date: dateLabel,
+            time: row.scheduled_time,
+            rawDate: dateObj,
+          };
+        });
+
+        setInterviews(formatted);
+      } catch (err) {
+        console.error('Failed to fetch upcoming interviews:', err);
+        if (isMounted) setError('Could not load interviews. Please try again later.');
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    fetchInterviews();
+    return () => { isMounted = false; };
+  }, []);
+
+  // Days (of the currently displayed month) that have an interview scheduled
+  const interviewDays = new Set(
+    interviews
+      .filter((i) => i.rawDate)
+      .map((i) => i.rawDate.getDate())
+  );
 
   return (
     <HRLayout>
       <HRPageLayout title="Calendar">
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-          {/* Calendar Grid */}
-          <div style={{ background: colors.cardBg, border: `1px solid ${colors.border}`, borderRadius: '16px', padding: '24px' }}>
+          <div style={{ background: 'white', border: `1px solid ${colors.border}`, borderRadius: '16px', padding: '24px' }}>
             <h2 style={{ fontSize: '18px', fontWeight: 600, color: colors.textDark, marginBottom: '16px' }}>June 2026</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px', textAlign: 'center' }}>
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
                 <div key={day} style={{ fontWeight: 600, color: colors.textGray, padding: '8px 0' }}>{day}</div>
               ))}
               {Array.from({ length: 30 }, (_, i) => i + 1).map(day => (
-                <div key={day} style={{
-                  padding: '8px 0',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  background: day === 25 ? colors.lightTeal : 'transparent',
-                  fontWeight: day === 25 ? 600 : 400,
-                  color: colors.textDark,
-                }}>
+                <div key={day} style={{ padding: '8px 0', borderRadius: '8px', cursor: 'pointer', background: interviewDays.has(day) ? colors.lightTeal : 'transparent', fontWeight: interviewDays.has(day) ? 600 : 400 }}>
                   {day}
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Upcoming Interviews */}
-          <div style={{ background: colors.cardBg, border: `1px solid ${colors.border}`, borderRadius: '16px', padding: '24px' }}>
+          <div style={{ background: 'white', border: `1px solid ${colors.border}`, borderRadius: '16px', padding: '24px' }}>
             <h2 style={{ fontSize: '18px', fontWeight: 600, color: colors.textDark, marginBottom: '16px' }}>Upcoming Interviews</h2>
-            {interviews.map((item, idx) => (
+
+            {loading && (
+              <p style={{ fontSize: '14px', color: colors.textGray }}>Loading interviews...</p>
+            )}
+
+            {!loading && error && (
+              <p style={{ fontSize: '14px', color: '#B00020' }}>{error}</p>
+            )}
+
+            {!loading && !error && interviews.length === 0 && (
+              <p style={{ fontSize: '14px', color: colors.textGray }}>No upcoming interviews scheduled.</p>
+            )}
+
+            {!loading && !error && interviews.map((item, idx) => (
               <div key={idx} style={{ padding: '12px 0', borderBottom: idx < interviews.length - 1 ? `1px solid ${colors.border}` : 'none' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
@@ -74,33 +112,12 @@ export default function Calendar() {
               </div>
             ))}
             <div style={{ marginTop: '16px' }}>
-              <button
-                style={{
-                  background: colors.primary,
-                  color: '#fff',
-                  border: 'none',
-                  padding: '10px 20px',
-                  borderRadius: '6px',
-                  width: '100%',
-                  cursor: 'pointer',
-                  fontFamily: "'Poppins', sans-serif",
-                  fontWeight: 500,
-                }}
-                onClick={() => setShowScheduleModal(true)}
-              >
+              <button style={{ backgroundColor: colors.primary, color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', width: '100%', cursor: 'pointer', fontFamily: "'Poppins', sans-serif", fontWeight: 500 }}>
                 Schedule New Interview
               </button>
             </div>
           </div>
         </div>
-
-        {/* ─── Schedule Interview Modal ─── */}
-        <ScheduleInterviewModal
-          isOpen={showScheduleModal}
-          onClose={() => setShowScheduleModal(false)}
-          onSchedule={handleSchedule}
-          candidates={candidates}
-        />
       </HRPageLayout>
     </HRLayout>
   );

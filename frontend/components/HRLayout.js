@@ -1,9 +1,15 @@
 import { useRouter } from 'next/router';
+import { useAuth } from '@/context/AuthContext';
 import Footer from './Footer';
 
 export default function HRLayout({ children }) {
   const router = useRouter();
+  const { user } = useAuth();
 
+  const getInitials = (name) => {
+    if (!name) return 'HR';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
   const navItems = [
     { name: 'Dashboard', path: '/hr-dashboard', icon: 'fa-chart-pie' },
     { name: 'Calendar', path: '/calendar', icon: 'fa-calendar-alt' },
@@ -24,9 +30,15 @@ export default function HRLayout({ children }) {
       <div className="hr-body">
         <aside className="hr-sidebar">
           <div className="sidebar-profile">
-            <div className="profile-avatar">SA</div>
-            <div className="profile-name">Sara Afzal</div>
-            <div className="profile-role">HR</div>
+            <div className="profile-avatar">
+              {user?.name ? getInitials(user.name) : 'HR'}
+            </div>
+            <div className="profile-name">
+              {user?.name || 'HR User'}
+            </div>
+            <div className="profile-role">
+              {user?.role || 'HR'}
+            </div>
           </div>
           <nav className="sidebar-nav">
             {navItems.map((item) => (

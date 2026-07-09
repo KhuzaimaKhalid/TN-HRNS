@@ -1,5 +1,5 @@
 // services/api.js
-const API_BASE_URL = 'https://trustnexus-internship.vercel.app/api';
+const API_BASE_URL = 'http://localhost:5000/api';
 const useRealApi = true; // 👈 Forced true to connect to the real cloud backend
 
 // ─── Mock Data ──────────────────────────────────────────────────
@@ -171,29 +171,18 @@ export const authAPI = {
 // ─── CANDIDATE ROUTES ──────────────────────────────────────────
 export const applicationAPI = {
   submit: async (data) => {
-    // Step 1: create the candidate profile (only allowed once per user — backend
-    // returns 400 if it already exists, which we can safely ignore here)
-    try {
-      await apiCall('/candidate/create-profile', {
-        method: 'POST',
-        body: JSON.stringify({ applied_position: data.position }),
-      });
-    } catch (err) {
-      if (!err.message.includes('already exists')) throw err;
-    }
-
-    // Step 2: submit the actual application
-    return apiCall('/candidate/submit-application', {
-      method: 'POST',
-      body: JSON.stringify({ applied_position: data.position }),
-    });
+    // ... existing submit code
   },
   getStatus: (applicationId) => apiCall(`/candidate/${applicationId}/status`),
+  
+  // 1. LEAVE THIS EXACTLY AS IT IS FOR THE CANDIDATE DASHBOARD
   getAll: () => apiCall('/candidate/dashboard'),
-  // api.js – inside applicationAPI
-getStatusByEmail: (email) => apiCall(`/candidate/status-by-email?email=${encodeURIComponent(email)}`, { _mock: false }),
+  
+  // 2. ADD THIS NEW METHOD FOR YOUR HR CANDIDATES PAGE
+  getAllForHR: () => apiCall('/candidate/hr/all'), 
+  
+  getStatusByEmail: (email) => apiCall(`/candidate/status-by-email?email=${encodeURIComponent(email)}`, { _mock: false }),
 };
-
 // ─── DOCUMENT ROUTES ──────────────────────────────────────────
 export const uploadAPI = {
   uploadDocuments: (files) => {
@@ -212,5 +201,43 @@ export const uploadAPI = {
 export const interviewAPI = {
   getDetails: () =>
     apiCall('/interview/details'), // 👈 Fixed path to request /details using the auth token instead of an application ID variable
+
+  // 👇 Used by the HR Calendar page to list all upcoming scheduled interviews
+  getUpcoming: () =>
+    apiCall('/interview/upcoming'),
 };
 
+// ─── HR ROUTES ─────────────────────────────────────────────────
+export const hrAPI = {
+  getDashboardMetrics: () => apiCall('/hr/metrics'),
+};
+
+// ─── MESSAGE ROUTES ────────────────────────────────────────────
+export const messageAPI = {
+  getInbox: () => apiCall('/messages/inbox'),
+  send: (receiverId, subject, body) =>
+    apiCall('/messages/sendMessage', { 
+      method: 'POST',
+      body: JSON.stringify({ receiverId, subject, body }),
+    }),
+};
+
+// ─── LEAVE ROUTES ──────────────────────────────────────────────
+export const leaveAPI = {
+  // Used by normal user/employee portal to submit a new leave request
+  requestLeave: (leave_type, start_date, end_date) =>
+    apiCall('/leaves/request', {
+      method: 'POST',
+      body: JSON.stringify({ leave_type, start_date, end_date })
+    }),
+
+  // Used by HR Admin page to fetch and view leaves
+  getAllForHR: () => apiCall('/leaves/hr/all'),
+  
+  // Used by HR Admin page to approve or reject
+  updateStatus: (id, status) => 
+    apiCall(`/leaves/status/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status })
+    })
+};

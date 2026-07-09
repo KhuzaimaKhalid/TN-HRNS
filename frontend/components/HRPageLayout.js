@@ -22,9 +22,12 @@ export default function HRPageLayout({ title, children }) {
       padding: 'clamp(16px, 4vw, 40px)',
       boxSizing: 'border-box'
     }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');`}</style>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+`}} />
       <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
-        
+
         {/* ─── Top Header ─── */}
         <div style={{
           display: 'flex',
@@ -35,7 +38,7 @@ export default function HRPageLayout({ title, children }) {
           marginBottom: '20px'
         }}>
           <h1 style={{ fontSize: 'clamp(22px, 4vw, 28px)', fontWeight: 700, color: colors.textDark, margin: 0 }}>{title}</h1>
-          
+
           <div style={{
             display: 'flex',
             flexWrap: 'wrap',
@@ -55,9 +58,9 @@ export default function HRPageLayout({ title, children }) {
               minWidth: '180px'
             }}>
               <i className="fas fa-search" style={{ color: colors.textGray, fontSize: '14px', paddingLeft: '8px' }}></i>
-              <input 
-                type="text" 
-                placeholder="Search projects, tasks, or clients..." 
+              <input
+                type="text"
+                placeholder="Search projects, tasks, or clients..."
                 style={{
                   border: 'none',
                   outline: 'none',
@@ -99,7 +102,7 @@ export default function HRPageLayout({ title, children }) {
             </button>
           </div>
         </div>
-        
+
         <hr style={{ border: 'none', borderTop: `1px solid ${colors.border}`, marginBottom: 'clamp(16px, 3vw, 30px)' }} />
 
         {/* ─── Page Content ─── */}
