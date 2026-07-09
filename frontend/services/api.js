@@ -1,5 +1,5 @@
 // services/api.js
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'https://trustnexus-internship.vercel.app/api';
 const useRealApi = true; // 👈 Forced true to connect to the real cloud backend
 
 // ─── Mock Data ──────────────────────────────────────────────────
@@ -205,6 +205,17 @@ export const interviewAPI = {
   // 👇 Used by the HR Calendar page to list all upcoming scheduled interviews
   getUpcoming: () =>
     apiCall('/interview/upcoming'),
+
+  // 👇 Used by the Schedule Interview modal to populate the candidate dropdown
+  getCandidates: () =>
+    apiCall('/interview/candidates'),
+
+  // 👇 Used by the Schedule Interview modal to actually create the interview
+  schedule: (payload) =>
+    apiCall('/interview/schedule', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
 };
 
 // ─── HR ROUTES ─────────────────────────────────────────────────
@@ -240,4 +251,12 @@ export const leaveAPI = {
       method: 'PATCH',
       body: JSON.stringify({ status })
     })
+};
+
+export const taskAPI = {
+  create: (formData) =>
+    apiCall('/tasks/createTask', {
+      method: 'POST',
+      body: formData, // apiCall already skips Content-Type for FormData — see the check in apiCall
+    }),
 };

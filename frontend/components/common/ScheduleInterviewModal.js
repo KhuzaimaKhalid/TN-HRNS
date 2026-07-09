@@ -1,5 +1,5 @@
 // components/common/ScheduleInterviewModal.js
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function ScheduleInterviewModal({ isOpen, onClose, onSchedule, candidates = [] }) {
   const [form, setForm] = useState({
@@ -10,11 +10,20 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSchedule, ca
     interviewer: '',
   });
 
+  // 👈 Automatically default selection to the first candidate when the database items finish loading
+  useEffect(() => {
+    if (isOpen && candidates.length > 0 && !form.candidate) {
+      setForm((prev) => ({ ...prev, candidate: '0' }));
+    }
+  }, [isOpen]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (onSchedule) {
       onSchedule(form);
     }
+    // Optional: reset the candidate selection when closing so it refreshes next run
+    setForm(prev => ({ ...prev, candidate: '' }));
     onClose();
   };
 
@@ -82,7 +91,7 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSchedule, ca
 
         <form onSubmit={handleSubmit}>
           <div style={{ display: 'grid', gap: '16px' }}>
-            {/* Candidate */}
+            {/* Candidate Dropdown Selection Field */}
             <div>
               <label style={{ fontSize: '13px', fontWeight: 600, color: colors.textDark, display: 'block', marginBottom: '6px' }}>
                 Candidate
@@ -90,6 +99,7 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSchedule, ca
               {candidates.length > 0 ? (
                 <select
                   value={form.candidate}
+                  // ✅ Keep it simple: standard strings eliminate React selection bugs
                   onChange={(e) => setForm({ ...form, candidate: e.target.value })}
                   style={{
                     width: '100%',
@@ -106,8 +116,11 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSchedule, ca
                   required
                 >
                   <option value="">Select candidate</option>
+                  <option value="">Select candidate</option>
                   {candidates.map((c, idx) => (
-                    <option key={idx} value={c.name || c}>{c.name || c}</option>
+                    <option key={idx} value={idx}>
+                      {c.name}
+                    </option>
                   ))}
                 </select>
               ) : (
@@ -132,7 +145,7 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSchedule, ca
               )}
             </div>
 
-            {/* Date */}
+            {/* Date Input */}
             <div>
               <label style={{ fontSize: '13px', fontWeight: 600, color: colors.textDark, display: 'block', marginBottom: '6px' }}>
                 Date
@@ -156,7 +169,7 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSchedule, ca
               />
             </div>
 
-            {/* Time */}
+            {/* Time Input */}
             <div>
               <label style={{ fontSize: '13px', fontWeight: 600, color: colors.textDark, display: 'block', marginBottom: '6px' }}>
                 Time
@@ -180,7 +193,7 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSchedule, ca
               />
             </div>
 
-            {/* Mode */}
+            {/* Mode Select */}
             <div>
               <label style={{ fontSize: '13px', fontWeight: 600, color: colors.textDark, display: 'block', marginBottom: '6px' }}>
                 Mode
@@ -207,7 +220,7 @@ export default function ScheduleInterviewModal({ isOpen, onClose, onSchedule, ca
               </select>
             </div>
 
-            {/* Interviewer */}
+            {/* Interviewer Name Text Input */}
             <div>
               <label style={{ fontSize: '13px', fontWeight: 600, color: colors.textDark, display: 'block', marginBottom: '6px' }}>
                 Interviewer
