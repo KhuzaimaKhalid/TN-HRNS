@@ -2,6 +2,7 @@
 import { useState, useRef } from 'react';
 import HRLayout from '@/components/HRLayout';
 import HRPageLayout from '@/components/HRPageLayout';
+import { taskAPI } from '@/services/api';
 
 export default function InternalCommunication() {
   const [activeTab, setActiveTab] = useState('Summary');
@@ -74,38 +75,45 @@ export default function InternalCommunication() {
   };
 
   // work = workType (primary) → summary (fallback) → 'New Task'
-  const handleCreate = () => {
-    const newWorkItem = {
-      id: Date.now(),
-      work: newItem.workType || newItem.summary || 'New Task',
-      assignee: newItem.assignee || 'Unassigned',
-      reporter: newItem.reporter || 'abc',
-      priority: newItem.priority || 'Medium',
-      status: newItem.status || 'To do',
-      created: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      updated: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      dueDate: newItem.dueDate || 'TBD',
-      startDate: newItem.startDate || 'TBD',
-      team: newItem.team || 'Unassigned',
-      attachment: newItem.attachment ? newItem.attachment.name : null,
-      resolution: 'Unresolved',
-    };
-    setWorkItems((prev) => [...prev, newWorkItem]);
-    setShowCreateModal(false);
-    setNewItem({
-      project: '',
-      workType: '',
-      status: '',
-      summary: '',
-      description: '',
-      assignee: '',
-      reporter: '',
-      priority: '',
-      startDate: '',
-      dueDate: '',
-      attachment: null,
-      team: '',
-    });
+  const handleCreate = async () => {
+    const formData = new FormData();
+    formData.append('title', newItem.workType || newItem.summary || 'New Task');
+    formData.append('description', newItem.description);
+    formData.append('project_name', newItem.project);
+    formData.append('assignee_name', newItem.assignee);
+    formData.append('reporter', newItem.reporter);
+    formData.append('priority', newItem.priority);
+    formData.append('start_date', newItem.startDate);
+    formData.append('due_date', newItem.dueDate);
+    formData.append('team', newItem.team);
+    formData.append('status', newItem.status || 'To do');
+    if (newItem.attachment) formData.append('attachment', newItem.attachment);
+  
+    try {
+      const res = await taskAPI.create(formData);
+      if (res.success) {
+        const t = res.data;
+        setWorkItems((prev) => [...prev, {
+          id: t.task_id,
+          work: t.title,
+          assignee: t.assignee_name || 'Unassigned',
+          reporter: t.reporter || 'abc',
+          priority: t.priority || 'Medium',
+          status: t.status || 'To do',
+          resolution: 'Unresolved',
+          created: new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          updated: new Date(t.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          dueDate: t.due_date,
+        }]);
+        setShowCreateModal(false);
+        setNewItem({ project: '', workType: '', status: '', summary: '', description: '', assignee: '', reporter: '', priority: '', startDate: '', dueDate: '', attachment: null, team: '' });
+      } else {
+        alert(res.message || 'Failed to create task.');
+      }
+    } catch (err) {
+      console.error('Error creating task:', err);
+      alert('Something went wrong creating the task.');
+    }
   };
 
   const handleStatusChange = () => {

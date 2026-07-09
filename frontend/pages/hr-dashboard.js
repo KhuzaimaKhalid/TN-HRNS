@@ -1,9 +1,57 @@
 import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 import HRLayout from '@/components/HRLayout';
 import HRPageLayout from '@/components/HRPageLayout';
+import { hrAPI } from '@/services/api';
+
+// Backend returns SQL TIME as "14:00:00" — convert to "02:00 PM"
+function formatTime(timeStr) {
+  if (!timeStr) return '';
+  const [hourStr, minuteStr] = timeStr.split(':');
+  const hour = parseInt(hourStr, 10);
+  const period = hour >= 12 ? 'PM' : 'AM';
+  const displayHour = hour % 12 === 0 ? 12 : hour % 12;
+  return `${String(displayHour).padStart(2, '0')}:${minuteStr} ${period}`;
+}
 
 export default function HRDashboard() {
   const router = useRouter();
+
+  const [metrics, setMetrics] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchMetrics = async () => {
+      try {
+        setLoading(true);
+        const res = await hrAPI.getDashboardMetrics();
+        if (isMounted) {
+          if (res.success) {
+            setMetrics(res.data);
+            setError(null);
+          } else {
+            setError(res.message || 'Failed to load dashboard data');
+          }
+        }
+      } catch (err) {
+        if (isMounted) setError(err.message || 'Failed to load dashboard data');
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    fetchMetrics();
+    return () => { isMounted = false; };
+  }, []);
+
+  const stats = metrics?.stats;
+  const todaysInterviews = metrics?.todaysInterviews || [];
+  const pipelineBreakdown = metrics?.pipelineBreakdown || {};
+  const pendingLeaveList = metrics?.pendingLeaveList || [];
+  const recentActivities = metrics?.recentActivities || [];
 
   const colors = {
     primary: '#007A7C',
@@ -68,11 +116,11 @@ export default function HRDashboard() {
           marginBottom: '30px'
         }}>
           {[
-            { icon: 'fa-briefcase', num: '7', label: 'Open positions' },
-            { icon: 'fa-user-plus', num: '38', label: 'Candidates in pipeline' },
-            { icon: 'fa-clock', num: '3', label: 'Leave request pending' },
-            { icon: 'fa-calendar-check', num: '9', label: 'Interviews this week' },
-            { icon: 'fa-project-diagram', num: '5', label: 'Active projects' }
+            { icon: 'fa-briefcase', num: loading ? '—' : (stats?.openPositions ?? 0), label: 'Open positions' },
+            { icon: 'fa-user-plus', num: loading ? '—' : (stats?.pipelineTotal ?? 0), label: 'Candidates in pipeline' },
+            { icon: 'fa-clock', num: loading ? '—' : (stats?.pendingLeaves ?? 0), label: 'Leave request pending' },
+            { icon: 'fa-calendar-check', num: loading ? '—' : (stats?.interviewsThisWeek ?? 0), label: 'Interviews this week' },
+            { icon: 'fa-project-diagram', num: loading ? '—' : (stats?.activeProjects ?? 0), label: 'Active projects' }
           ].map((stat, idx) => (
             <div key={idx} style={statCardStyle}>
               <div style={{ color: colors.primary, fontSize: 'clamp(18px, 2vw, 20px)', marginBottom: '8px', background: colors.lightTeal, width: '40px', height: '40px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px' }}>
@@ -103,12 +151,12 @@ export default function HRDashboard() {
             <div style={{ position: 'absolute', top: '10px', left: '30px', right: '30px', height: '2px', backgroundColor: colors.primary, zIndex: 1 }}></div>
             
             {[
-              { num: '38', text: 'Applied' },
-              { num: '21', text: 'Task submitted' },
-              { num: '14', text: 'Interview scheduled' },
-              { num: '9', text: 'Interviewed' },
-              { num: '4', text: 'Selected' },
-              { num: '3', text: 'Onboarded' }
+              { num: loading ? '—' : (pipelineBreakdown.applied ?? 0), text: 'Applied' },
+              { num: loading ? '—' : (pipelineBreakdown.taskSubmitted ?? 0), text: 'Task submitted' },
+              { num: loading ? '—' : (pipelineBreakdown.interviewScheduled ?? 0), text: 'Interview scheduled' },
+              { num: loading ? '—' : (pipelineBreakdown.interviewed ?? 0), text: 'Interviewed' },
+              { num: loading ? '—' : (pipelineBreakdown.selected ?? 0), text: 'Selected' },
+              { num: loading ? '—' : (pipelineBreakdown.onboarded ?? 0), text: 'Onboarded' }
             ].map((step, idx) => (
               <div key={idx} style={{
                 display: 'flex',
@@ -147,46 +195,56 @@ export default function HRDashboard() {
                 <a href="#" style={linkActionStyle}>Open calendar <i className="fas fa-arrow-right"></i></a>
               </div>
               
-              {[
-                { name: 'Sana Kareem', role: 'Front developer.', time: '02:00 PM' },
-                { name: 'Rana Aslam', role: 'AI engineer.', time: '03:00 PM' }
-              ].map((candidate, idx) => (
-                <div key={idx} style={listItemStyle}>
-                  <div>
-                    <h4 style={{ margin: '0 0 4px 0', fontSize: 'clamp(14px, 1.5vw, 15px)', fontWeight: 500, color: colors.textDark, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
-                      {candidate.name}
-                      <span style={{ background: colors.lightTeal, color: colors.primary, fontSize: '11px', padding: '2px 8px', borderRadius: '12px', display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                        <i className="fas fa-circle" style={{ fontSize: '6px' }}></i> {candidate.time}
-                      </span>
-                    </h4>
-                    <p style={{ margin: 0, fontSize: '13px', color: colors.textGray }}>{candidate.role}</p>
+              {loading ? (
+                <p style={{ fontSize: '13px', color: colors.textGray, padding: '12px 0' }}>Loading interviews…</p>
+              ) : error ? (
+                <p style={{ fontSize: '13px', color: '#c0392b', padding: '12px 0' }}>Could not load interviews.</p>
+              ) : todaysInterviews.length === 0 ? (
+                <p style={{ fontSize: '13px', color: colors.textGray, padding: '12px 0' }}>No interviews scheduled today.</p>
+              ) : (
+                todaysInterviews.map((candidate, idx) => (
+                  <div key={candidate.interview_id ?? idx} style={listItemStyle}>
+                    <div>
+                      <h4 style={{ margin: '0 0 4px 0', fontSize: 'clamp(14px, 1.5vw, 15px)', fontWeight: 500, color: colors.textDark, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
+                        {candidate.name}
+                        <span style={{ background: colors.lightTeal, color: colors.primary, fontSize: '11px', padding: '2px 8px', borderRadius: '12px', display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                          <i className="fas fa-circle" style={{ fontSize: '6px' }}></i> {formatTime(candidate.time)}
+                        </span>
+                      </h4>
+                      <p style={{ margin: 0, fontSize: '13px', color: colors.textGray }}>{candidate.role}</p>
+                    </div>
+                    <button style={{ background: 'transparent', border: `1px solid ${colors.border}`, padding: '6px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: 500, color: colors.textDark, cursor: 'pointer', fontFamily: 'Poppins, sans-serif', whiteSpace: 'nowrap' }}>View</button>
                   </div>
-                  <button style={{ background: 'transparent', border: `1px solid ${colors.border}`, padding: '6px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: 500, color: colors.textDark, cursor: 'pointer', fontFamily: "'Poppins', sans-serif", whiteSpace: 'nowrap' }}>View</button>
-                </div>
-              ))}
+                ))
+              )}
             </div>
 
+            {/* ─── Dynamic Recent Activities ─── */}
             <div style={{ ...cardStyle, marginBottom: 0 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
                 <h2 style={{ fontSize: 'clamp(16px, 2vw, 18px)', fontWeight: 600, margin: 0, color: colors.textDark }}>Recent activities</h2>
               </div>
               
-              {[
-                { title: 'Onboarding document approved', desc: 'Hamza Jamali • offer letter • 1 hr ago' },
-                { title: 'Leave forwarded to CEO', desc: 'Noman Tariq • Annual leave • 2 days ago' }
-              ].map((activity, idx) => (
-                <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', padding: '12px 0', borderBottom: idx === 0 ? `1px solid ${colors.border}` : 'none' }}>
-                  <div style={{ width: '12px', height: '12px', backgroundColor: colors.primary, borderRadius: '50%', marginTop: '6px', flexShrink: 0 }}></div>
-                  <div>
-                    <h4 style={{ margin: '0 0 4px 0', fontSize: '14px', fontWeight: 500, color: colors.textDark }}>{activity.title}</h4>
-                    <p style={{ margin: 0, fontSize: '12px', color: colors.textGray }}>{activity.desc}</p>
+              {loading ? (
+                <p style={{ fontSize: '13px', color: colors.textGray, padding: '12px 0' }}>Loading activities…</p>
+              ) : recentActivities.length === 0 ? (
+                <p style={{ fontSize: '13px', color: colors.textGray, padding: '12px 0' }}>No recent activities logged.</p>
+              ) : (
+                recentActivities.map((activity, idx) => (
+                  <div key={activity.id ?? idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', padding: '12px 0', borderBottom: idx === recentActivities.length - 1 ? 'none' : `1px solid ${colors.border}` }}>
+                    <div style={{ width: '12px', height: '12px', backgroundColor: colors.primary, borderRadius: '50%', marginTop: '6px', flexShrink: 0 }}></div>
+                    <div>
+                      <h4 style={{ margin: '0 0 4px 0', fontSize: '14px', fontWeight: 500, color: colors.textDark }}>{activity.title}</h4>
+                      <p style={{ margin: 0, fontSize: '12px', color: colors.textGray }}>{activity.desc}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
           {/* Right Column */}
+          {/* ─── Dynamic Pending Leave Approvals ─── */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div style={cardStyle}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
@@ -194,18 +252,21 @@ export default function HRDashboard() {
                 <a href="#" style={linkActionStyle}>View all <i className="fas fa-arrow-right"></i></a>
               </div>
               
-              {[
-                { name: 'Usman Farooq', desc: 'Annual leave • 5 days • Jul 1-5' },
-                { name: 'Zara Hashmi', desc: 'Sick leave • 2 days • Jun 27-28' }
-              ].map((leave, idx) => (
-                <div key={idx} style={listItemStyle}>
-                  <div>
-                    <h4 style={{ margin: '0 0 4px 0', fontSize: '15px', fontWeight: 500, color: colors.textDark }}>{leave.name}</h4>
-                    <p style={{ margin: 0, fontSize: '13px', color: colors.textGray }}>{leave.desc}</p>
+              {loading ? (
+                <p style={{ fontSize: '13px', color: colors.textGray, padding: '12px 0' }}>Loading leaves…</p>
+              ) : pendingLeaveList.length === 0 ? (
+                <p style={{ fontSize: '13px', color: colors.textGray, padding: '12px 0' }}>No pending leave approvals found.</p>
+              ) : (
+                pendingLeaveList.map((leave, idx) => (
+                  <div key={leave.id ?? idx} style={listItemStyle}>
+                    <div>
+                      <h4 style={{ margin: '0 0 4px 0', fontSize: '15px', fontWeight: 500, color: colors.textDark }}>{leave.name}</h4>
+                      <p style={{ margin: 0, fontSize: '13px', color: colors.textGray }}>{leave.desc}</p>
+                    </div>
+                    <button style={{ background: 'transparent', border: `1px solid ${colors.border}`, padding: '6px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: 500, color: colors.textDark, cursor: 'pointer', fontFamily: 'Poppins, sans-serif', whiteSpace: 'nowrap' }}>View</button>
                   </div>
-                  <button style={{ background: 'transparent', border: `1px solid ${colors.border}`, padding: '6px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: 500, color: colors.textDark, cursor: 'pointer', fontFamily: "'Poppins', sans-serif", whiteSpace: 'nowrap' }}>View</button>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
