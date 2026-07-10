@@ -1,3 +1,4 @@
+// components/JobApplication.js
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 
@@ -50,7 +51,45 @@ export default function JobApplication() {
 
   return (
     <div className="auth-card job-app-card">
-      <h1 className="auth-welcome" style={{ fontSize: '1.6rem' }}>Job Application Form</h1>
+      {/* Header with Title + Track Application button */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '12px',
+        marginBottom: '4px',
+      }}>
+        <h1 className="auth-welcome" style={{ fontSize: '1.6rem', margin: 0 }}>
+          Job Application Form
+        </h1>
+        <button
+          onClick={() => router.push('/track')}
+          style={{
+            background: 'transparent',
+            color: '#00423D',
+            border: '1.5px solid #00423D',
+            padding: '8px 20px',
+            borderRadius: '30px',
+            fontWeight: 600,
+            fontSize: '0.85rem',
+            fontFamily: "'Poppins', sans-serif",
+            cursor: 'pointer',
+            transition: 'all 0.25s ease',
+            whiteSpace: 'nowrap',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = '#00423D';
+            e.currentTarget.style.color = '#ffffff';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.color = '#00423D';
+          }}
+        >
+          Track Application
+        </button>
+      </div>
       <p className="auth-subtitle" style={{ marginBottom: '28px' }}>Complete the form below to submit your application.</p>
 
       <form onSubmit={handleNext}>
