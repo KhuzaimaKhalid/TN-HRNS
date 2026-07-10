@@ -1,15 +1,9 @@
+// components/HRLayout.js
 import { useRouter } from 'next/router';
-import { useAuth } from '@/context/AuthContext';
-import Footer from './Footer';
 
 export default function HRLayout({ children }) {
   const router = useRouter();
-  const { user } = useAuth();
 
-  const getInitials = (name) => {
-    if (!name) return 'HR';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-  };
   const navItems = [
     { name: 'Dashboard', path: '/hr-dashboard', icon: 'fa-chart-pie' },
     { name: 'Calendar', path: '/calendar', icon: 'fa-calendar-alt' },
@@ -21,6 +15,7 @@ export default function HRLayout({ children }) {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('userData');
     localStorage.removeItem('userRole');
     router.push('/');
   };
@@ -30,15 +25,9 @@ export default function HRLayout({ children }) {
       <div className="hr-body">
         <aside className="hr-sidebar">
           <div className="sidebar-profile">
-            <div className="profile-avatar">
-              {user?.name ? getInitials(user.name) : 'HR'}
-            </div>
-            <div className="profile-name">
-              {user?.name || 'HR User'}
-            </div>
-            <div className="profile-role">
-              {user?.role || 'HR'}
-            </div>
+            <div className="profile-avatar">SA</div>
+            <div className="profile-name">Sara Afzal</div>
+            <div className="profile-role">HR</div>
           </div>
           <nav className="sidebar-nav">
             {navItems.map((item) => (
@@ -52,7 +41,6 @@ export default function HRLayout({ children }) {
               </a>
             ))}
           </nav>
-          {/* Create Task Button */}
           <div style={{ padding: '16px 12px' }}>
             <button
               style={{
@@ -76,12 +64,11 @@ export default function HRLayout({ children }) {
               <i className="fas fa-plus-circle"></i> Create Task
             </button>
           </div>
-          {/* Logout Button */}
           <div style={{ padding: '0 12px 16px', marginTop: 'auto' }}>
             <button
               style={{
                 width: '100%',
-                background: '#1c7065',
+                background: 'transparent',
                 color: '#ffffff',
                 border: '1px solid rgba(255,255,255,0.3)',
                 padding: '10px',
@@ -107,7 +94,6 @@ export default function HRLayout({ children }) {
           {children}
         </main>
       </div>
-      <Footer />
     </div>
   );
 }

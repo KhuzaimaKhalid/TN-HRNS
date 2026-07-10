@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/context/AuthContext';
-import Footer from '@/components/Footer';
 import Button from '@/components/common/Button';
 import Input from '@/components/common/Input';
 
-export default function Register() {   // ✅ default export
+export default function Register() {
   const router = useRouter();
   const { register, loading } = useAuth();
   const [form, setForm] = useState({ fullName: '', email: '', password: '', confirmPassword: '' });
@@ -40,8 +39,16 @@ export default function Register() {   // ✅ default export
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-wrapper">
+    <div style={{
+      minHeight: '100vh',
+      background: '#effbfb',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '24px',
+    }}>
+      <div className="auth-wrapper" style={{ maxWidth: '520px', width: '100%' }}>
         <div className="auth-card">
           <button className="auth-close" onClick={() => router.push('/')}>
             <i className="fas fa-times"></i>
@@ -104,7 +111,6 @@ export default function Register() {   // ✅ default export
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }

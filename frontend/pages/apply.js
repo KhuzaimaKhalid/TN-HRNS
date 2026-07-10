@@ -1,5 +1,4 @@
 import { useRouter } from 'next/router';
-import Footer from '@/components/Footer';
 import JobApplication from '@/components/JobApplication';
 
 export default function Apply() {
@@ -10,26 +9,15 @@ export default function Apply() {
       minHeight: '100vh',
       background: '#effbfb',
       display: 'flex',
-      flexDirection: 'column',
+      justifyContent: 'center',
+      padding: '32px 24px 20px',
     }}>
-      {/* Content area – centered with padding */}
       <div style={{
-        flex: 1,
-        display: 'flex',
-        justifyContent: 'center',
-        padding: '32px 24px 20px',
-        boxSizing: 'border-box',
+        width: '100%',
+        maxWidth: '720px',
       }}>
-        <div style={{
-          width: '100%',
-          maxWidth: '720px',
-        }}>
-          <JobApplication />
-        </div>
+        <JobApplication />
       </div>
-
-      {/* Footer – full width, no padding from parent */}
-      <Footer />
     </div>
   );
 }

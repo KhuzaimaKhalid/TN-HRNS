@@ -1,8 +1,6 @@
-// pages/login.js
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/context/AuthContext';
-import Footer from '@/components/Footer';
 import Button from '@/components/common/Button';
 import Input from '@/components/common/Input';
 
@@ -36,14 +34,21 @@ export default function Login() {
     if (result.success) {
       router.push(role === 'HR' ? '/hr-dashboard' : '/dashboard');
     } else {
-      // Show specific error message from API or fallback
       setApiError(result.error || 'Invalid email or password. Please try again.');
     }
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-wrapper">
+    <div style={{
+      minHeight: '100vh',
+      background: '#effbfb',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '24px',
+    }}>
+      <div className="auth-wrapper" style={{ maxWidth: '520px', width: '100%' }}>
         <div className="auth-card">
           <button className="auth-close" onClick={() => router.push('/')}>
             <i className="fas fa-times"></i>
@@ -70,16 +75,15 @@ export default function Login() {
 
           <div className="auth-forgot-password"><a>Forget Password?</a></div>
 
-          {/* Show API error message */}
           {apiError && (
-            <div style={{ 
-              background: '#f8d7da', 
-              color: '#721c24', 
-              padding: '10px 14px', 
-              borderRadius: '12px', 
+            <div style={{
+              background: '#f8d7da',
+              color: '#721c24',
+              padding: '10px 14px',
+              borderRadius: '12px',
               marginBottom: '16px',
               textAlign: 'center',
-              fontSize: '0.9rem'
+              fontSize: '0.9rem',
             }}>
               <i className="fas fa-exclamation-circle" style={{ marginRight: '8px' }}></i>
               {apiError}
@@ -93,7 +97,6 @@ export default function Login() {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }
