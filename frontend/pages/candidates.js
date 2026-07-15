@@ -4,7 +4,7 @@ import HRLayout from '@/components/HRLayout';
 import HRPageLayout from '@/components/HRPageLayout';
 import CandidateDetailView from '@/components/candidate/CandidateDetailView';
 
-// ─── UPDATED DEMO DATA with the required statuses ──────────────
+// Fixed demo data
 const DEMO_CANDIDATES = [
   { id: 1, fullName: 'Sana Kareem', position: 'UI/UX Designer', skills: ['Figma', 'Prototyping'], applied: '2026-06-19', status: 'Selected' },
   { id: 2, fullName: 'Hamza Khan', position: 'Backend Dev', skills: ['Node.js', 'PostgreSQL'], applied: '2026-06-09', status: 'Rejected' },
@@ -17,39 +17,45 @@ export default function Candidates() {
   const [selected, setSelected] = useState([]);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
 
-  // Filter states
+  // ─── Create Project Modal State ───
+  const [showProjectModal, setShowProjectModal] = useState(false);
+  const [projectActiveTab, setProjectActiveTab] = useState('save');
+
+  // ─── Filter states ───
   const [openFilter, setOpenFilter] = useState(null);
   const [statusFilter, setStatusFilter] = useState(null);
   const [positionFilter, setPositionFilter] = useState(null);
   const [skillsFilter, setSkillsFilter] = useState(null);
 
-  // ─── statusOptions is now derived from the updated data ───────
   const statusOptions = [...new Set(DEMO_CANDIDATES.map(c => c.status || 'Applied'))];
-  // This will give: ['Selected', 'Rejected', 'Applied', 'Waiting list']
-
   const positionOptions = [...new Set(DEMO_CANDIDATES.map((c) => c.position))];
   const skillsOptions = [...new Set(DEMO_CANDIDATES.flatMap((c) => c.skills))];
 
   const colors = {
     primary: '#007A7C',
-    border: '#E5E9EB',
-    headerBg: '#8A8F95',
+    primaryDark: '#06504A',
+    border: '#020a14',
     textDark: '#1A1A1A',
     textGray: '#666666',
-    skillBg: '#D6EDEC',
+    textMuted: '#8a8f98',
+    bg: '#effbfb',
+    cardBg: '#FFFFFF',
+    lightTeal: '#E8F5F5',
+    skillBg: '#DCEFEF',
     skillText: '#007A7C',
+    headerBg: '#8A8F95',
+    danger: '#dc3545',
   };
 
-  // ─── statusStyles map now includes 'Waiting list' ─────────────
   const statusStyles = (status) => {
     const map = {
-      Selected:     { bg: '#DFF6E5', color: '#1E8E3E' },
-      Rejected:     { bg: '#FDE2E4', color: '#D32F2F' },
-      Applied:      { bg: '#E3F2FD', color: '#1565C0' },
+      Selected: { bg: '#DFF6E5', color: '#1E8E3E' },
+      Rejected: { bg: '#FDE2E4', color: '#D32F2F' },
+      Applied: { bg: '#E3F2FD', color: '#1565C0' },
       'Waiting list': { bg: '#FFF3D6', color: '#B8860B' },
       Interviewing: { bg: '#EDE7FB', color: '#6B3FD4' },
-      Shortlisted:  { bg: '#FFF3D6', color: '#B8860B' },
-      Submitted:    { bg: '#E3F2FD', color: '#1565C0' },
+      Shortlisted: { bg: '#FFF3D6', color: '#B8860B' },
+      Submitted: { bg: '#E3F2FD', color: '#1565C0' },
     };
     return map[status] || { bg: '#EEEEEE', color: '#555555' };
   };
@@ -78,6 +84,14 @@ export default function Candidates() {
     return [];
   };
 
+  const bottomTabs = [
+    { key: 'save', label: 'Save As/Add' },
+    { key: 'approve', label: 'Approve' },
+    { key: 'manage', label: 'Manage Tasks' },
+    { key: 'submittal', label: 'Submittal Tasks' },
+    { key: 'review', label: 'Review' },
+  ];
+
   // ─── If a candidate is selected, show detail view ────────────
   if (selectedCandidate) {
     return (
@@ -92,7 +106,7 @@ export default function Candidates() {
     );
   }
 
-  // Apply filters to candidate list
+  // Apply filters
   const filteredCandidates = candidates.filter((c) => {
     const status = c.status || 'Applied';
     const matchesStatus = !statusFilter || status === statusFilter;
@@ -101,7 +115,7 @@ export default function Candidates() {
     return matchesStatus && matchesPosition && matchesSkills;
   });
 
-  // Reusable filter dropdown button
+  // Filter dropdown component
   const FilterDropdown = ({ label, filterKey, options, value, onChange }) => (
     <div style={{ position: 'relative' }}>
       <button
@@ -156,33 +170,75 @@ export default function Candidates() {
     </div>
   );
 
-  // ─── Otherwise show the table ──────────────────────────────────
+  // ─── Main render ──────────────────────────────────────────────
   return (
     <HRLayout>
       <HRPageLayout title="Candidates">
-        {/* Filters: Status / Position / Skills */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px', marginBottom: '16px' }}>
-          <FilterDropdown
-            label="Filter by status"
-            filterKey="status"
-            options={statusOptions}
-            value={statusFilter}
-            onChange={setStatusFilter}
-          />
-          <FilterDropdown
-            label="Filter by position"
-            filterKey="position"
-            options={positionOptions}
-            value={positionFilter}
-            onChange={setPositionFilter}
-          />
-          <FilterDropdown
-            label="Filter by skills"
-            filterKey="skills"
-            options={skillsOptions}
-            value={skillsFilter}
-            onChange={setSkillsFilter}
-          />
+        {/* ─── Filters + Create Project Button ─── */}
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '14px',
+          marginBottom: '16px',
+          alignItems: 'center',
+        }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '14px',
+            flex: 1,
+            minWidth: '300px',
+          }}>
+            <FilterDropdown
+              label="Filter by status"
+              filterKey="status"
+              options={statusOptions}
+              value={statusFilter}
+              onChange={setStatusFilter}
+            />
+            <FilterDropdown
+              label="Filter by position"
+              filterKey="position"
+              options={positionOptions}
+              value={positionFilter}
+              onChange={setPositionFilter}
+            />
+            <FilterDropdown
+              label="Filter by skills"
+              filterKey="skills"
+              options={skillsOptions}
+              value={skillsFilter}
+              onChange={setSkillsFilter}
+            />
+          </div>
+
+          {/* ─── CREATE PROJECT BUTTON ─── */}
+          <button
+            style={{
+              background: colors.primary,
+              color: '#fff',
+              border: 'none',
+              padding: '10px 24px',
+              borderRadius: '10px',
+              fontWeight: 600,
+              fontSize: '14px',
+              cursor: 'pointer',
+              fontFamily: "'Poppins', sans-serif",
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              whiteSpace: 'nowrap',
+              transition: 'background 0.2s',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = colors.primaryDark}
+            onMouseLeave={(e) => e.currentTarget.style.background = colors.primary}
+            onClick={() => {
+              console.log('Create Project clicked');
+              setShowProjectModal(true);
+            }}
+          >
+            <i className="fas fa-folder-plus"></i> Create Project
+          </button>
         </div>
 
         {/* Table card */}
@@ -285,6 +341,208 @@ export default function Candidates() {
           </div>
         </div>
       </HRPageLayout>
+
+      {/* ─── CREATE PROJECT MODAL ─── */}
+      {showProjectModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 99999,
+          padding: '20px',
+        }}
+        onClick={() => setShowProjectModal(false)}
+        >
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '16px',
+            maxWidth: '580px',
+            width: '100%',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            padding: '32px 32px 28px',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+            position: 'relative',
+          }}
+          onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setShowProjectModal(false)}
+              style={{
+                position: 'absolute',
+                top: '12px',
+                right: '16px',
+                background: 'transparent',
+                border: 'none',
+                fontSize: '28px',
+                cursor: 'pointer',
+                color: colors.textGray,
+                fontFamily: "'Poppins', sans-serif",
+                lineHeight: 1,
+              }}
+            >
+              ×
+            </button>
+
+            <h2 style={{
+              fontSize: '22px',
+              fontWeight: 700,
+              color: colors.textDark,
+              margin: '0 0 24px 0',
+            }}>
+              Create Project
+            </h2>
+
+            {/* Form fields */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div>
+                <label style={{ fontSize: '14px', fontWeight: 600, color: colors.textDark, display: 'block', marginBottom: '6px' }}>
+                  Project name
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter project name"
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    border: `1.5px solid ${colors.border}`,
+                    fontSize: '14px',
+                    fontFamily: "'Poppins', sans-serif",
+                    background: '#fafcfc',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '14px', fontWeight: 600, color: colors.textDark, display: 'block', marginBottom: '6px' }}>
+                  Description
+                </label>
+                <textarea
+                  placeholder="Enter project description"
+                  rows="3"
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    border: `1.5px solid ${colors.border}`,
+                    fontSize: '14px',
+                    fontFamily: "'Poppins', sans-serif",
+                    background: '#fafcfc',
+                    outline: 'none',
+                    resize: 'vertical',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '14px', fontWeight: 600, color: colors.textDark, display: 'block', marginBottom: '6px' }}>
+                  Form team
+                </label>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '10px 14px',
+                  border: `1.5px solid ${colors.border}`,
+                  borderRadius: '8px',
+                  background: '#fafcfc',
+                  cursor: 'pointer',
+                }}>
+                  <span style={{ color: colors.textGray, fontSize: '14px' }}>@ Add member</span>
+                  <i className="fas fa-plus-circle" style={{ color: colors.primary, fontSize: '18px' }}></i>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '14px', fontWeight: 600, color: colors.textDark, display: 'block', marginBottom: '6px' }}>
+                  Target timeline
+                </label>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '10px 14px',
+                  border: `1.5px solid ${colors.border}`,
+                  borderRadius: '8px',
+                  background: '#fafcfc',
+                  cursor: 'pointer',
+                }}>
+                  <span style={{ color: colors.textGray, fontSize: '14px' }}>Assign project manager</span>
+                  <i className="fas fa-chevron-down" style={{ color: colors.textGray, fontSize: '14px' }}></i>
+                </div>
+              </div>
+
+              <button
+                style={{
+                  background: colors.primary,
+                  color: '#fff',
+                  border: 'none',
+                  padding: '14px',
+                  borderRadius: '10px',
+                  fontSize: '16px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontFamily: "'Poppins', sans-serif",
+                  width: '100%',
+                  marginTop: '8px',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = colors.primaryDark}
+                onMouseLeave={(e) => e.currentTarget.style.background = colors.primary}
+                onClick={() => {
+                  alert('Project created successfully!');
+                  setShowProjectModal(false);
+                }}
+              >
+                Create project
+              </button>
+            </div>
+
+            {/* Bottom tabs */}
+            <div style={{
+              marginTop: '28px',
+              paddingTop: '20px',
+              borderTop: `2px solid ${colors.border}`,
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '12px',
+              justifyContent: 'space-between',
+            }}>
+              {bottomTabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setProjectActiveTab(tab.key)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '6px 12px',
+                    fontFamily: "'Poppins', sans-serif",
+                    fontSize: '14px',
+                    fontWeight: projectActiveTab === tab.key ? 600 : 400,
+                    color: projectActiveTab === tab.key ? colors.primary : colors.textGray,
+                    borderBottom: projectActiveTab === tab.key ? `3px solid ${colors.primary}` : '3px solid transparent',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </HRLayout>
   );
 }

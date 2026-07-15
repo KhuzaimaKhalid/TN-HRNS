@@ -4,6 +4,9 @@ import { useState } from 'react';
 export default function CandidateDetailView({ candidate, onBack }) {
   const [activeTab, setActiveTab] = useState('application');
 
+  // ─── Create Project Modal State ───
+  const [showProjectModal, setShowProjectModal] = useState(false);
+
   const info = {
     name: candidate?.fullName || 'Sana Kareem',
     role: candidate?.position || 'UI/UX Designer',
@@ -199,23 +202,26 @@ export default function CandidateDetailView({ candidate, onBack }) {
             ))}
           </div>
 
-          {/* Create Project Button */}
-          <button style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            background: 'rgba(255,255,255,0.15)',
-            border: '1px solid rgba(255,255,255,0.25)',
-            color: '#fff',
-            borderRadius: '10px',
-            padding: '12px 14px',
-            cursor: 'pointer',
-            fontSize: '13px',
-            fontFamily: "'Poppins', sans-serif",
-            fontWeight: 600,
-            width: '100%',
-          }}>
+          {/* ─── Sidebar Create Project Button ─── */}
+          <button
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              border: '1px solid rgba(255,255,255,0.25)',
+              color: '#fff',
+              borderRadius: '10px',
+              padding: '12px 14px',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontFamily: "'Poppins', sans-serif",
+              fontWeight: 600,
+              width: '100%',
+            }}
+            onClick={() => setShowProjectModal(true)}
+          >
             <i className="fas fa-plus-circle"></i> Create Project
           </button>
         </aside>
@@ -622,18 +628,22 @@ export default function CandidateDetailView({ candidate, onBack }) {
                   </div>
 
                   <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
-                    <button style={{
-                      flex: 1,
-                      background: 'transparent',
-                      border: `1.5px solid ${colors.border}`,
-                      padding: '12px',
-                      borderRadius: '10px',
-                      fontWeight: 600,
-                      fontSize: '14px',
-                      cursor: 'pointer',
-                      color: colors.textDark,
-                      fontFamily: "'Poppins', sans-serif",
-                    }}>
+                    {/* ─── Create Project button inside Assign Task ─── */}
+                    <button
+                      style={{
+                        flex: 1,
+                        background: 'transparent',
+                        border: `1.5px solid ${colors.border}`,
+                        padding: '12px',
+                        borderRadius: '10px',
+                        fontWeight: 600,
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                        color: colors.textDark,
+                        fontFamily: "'Poppins', sans-serif",
+                      }}
+                      onClick={() => setShowProjectModal(true)}
+                    >
                       <i className="fas fa-plus-circle" style={{ marginRight: '6px' }}></i>
                       Create Project
                     </button>
@@ -656,10 +666,9 @@ export default function CandidateDetailView({ candidate, onBack }) {
                 </div>
               )}
 
-              {/* 3. SUBMITTED TASK — professionally styled to match the figure */}
+              {/* 3. SUBMITTED TASK */}
               {activeTab === 'submitted' && (
                 <div>
-                  {/* Task submission card */}
                   <div style={{
                     background: colors.lightTeal,
                     borderRadius: '12px',
@@ -676,7 +685,6 @@ export default function CandidateDetailView({ candidate, onBack }) {
                     </p>
                   </div>
 
-                  {/* Details */}
                   <div style={{ marginBottom: '16px' }}>
                     <p style={{ fontSize: '13px', fontWeight: 600, color: colors.textDark, margin: '0 0 4px 0' }}>
                       <i className="fas fa-link" style={{ marginRight: '6px', color: colors.primary }}></i>
@@ -696,7 +704,6 @@ export default function CandidateDetailView({ candidate, onBack }) {
                     </p>
                   </div>
 
-                  {/* File attachment */}
                   <div style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -714,13 +721,11 @@ export default function CandidateDetailView({ candidate, onBack }) {
                     <span style={{ fontSize: '12px', color: colors.textGray }}>1.1 MB</span>
                   </div>
 
-                  {/* Separator */}
                   <div style={{
                     borderTop: `2px solid ${colors.border}`,
                     marginBottom: '24px',
                   }}></div>
 
-                  {/* Reviews by Team Lead */}
                   <div>
                     <h4 style={{
                       fontSize: '13px',
@@ -771,7 +776,6 @@ export default function CandidateDetailView({ candidate, onBack }) {
                     </div>
                   </div>
 
-                  {/* Action Buttons */}
                   <div style={{
                     display: 'flex',
                     gap: '12px',
@@ -831,6 +835,174 @@ export default function CandidateDetailView({ candidate, onBack }) {
           </div>
         </main>
       </div>
+
+      {/* ─── CREATE PROJECT MODAL (SIMPLE FORM) ─── */}
+      {showProjectModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 99999,
+          padding: '20px',
+        }}
+        onClick={() => setShowProjectModal(false)}
+        >
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '16px',
+            maxWidth: '540px',
+            width: '100%',
+            padding: '32px 32px 28px',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+            position: 'relative',
+          }}
+          onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setShowProjectModal(false)}
+              style={{
+                position: 'absolute',
+                top: '12px',
+                right: '16px',
+                background: 'transparent',
+                border: 'none',
+                fontSize: '28px',
+                cursor: 'pointer',
+                color: colors.textGray,
+                fontFamily: "'Poppins', sans-serif",
+                lineHeight: 1,
+              }}
+            >
+              ×
+            </button>
+
+            <h2 style={{
+              fontSize: '22px',
+              fontWeight: 700,
+              color: colors.textDark,
+              margin: '0 0 24px 0',
+            }}>
+              Create Project
+            </h2>
+
+            {/* Form fields */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div>
+                <label style={{ fontSize: '14px', fontWeight: 600, color: colors.textDark, display: 'block', marginBottom: '6px' }}>
+                  Project name
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter project name"
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    border: `1.5px solid ${colors.border}`,
+                    fontSize: '14px',
+                    fontFamily: "'Poppins', sans-serif",
+                    background: '#fafcfc',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '14px', fontWeight: 600, color: colors.textDark, display: 'block', marginBottom: '6px' }}>
+                  Description
+                </label>
+                <textarea
+                  placeholder="Enter project description"
+                  rows="3"
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    border: `1.5px solid ${colors.border}`,
+                    fontSize: '14px',
+                    fontFamily: "'Poppins', sans-serif",
+                    background: '#fafcfc',
+                    outline: 'none',
+                    resize: 'vertical',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '14px', fontWeight: 600, color: colors.textDark, display: 'block', marginBottom: '6px' }}>
+                  Form team
+                </label>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '10px 14px',
+                  border: `1.5px solid ${colors.border}`,
+                  borderRadius: '8px',
+                  background: '#fafcfc',
+                  cursor: 'pointer',
+                }}>
+                  <span style={{ color: colors.textGray, fontSize: '14px' }}>Add member</span>
+                  <i className="fas fa-plus-circle" style={{ color: colors.primary, fontSize: '18px' }}></i>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '14px', fontWeight: 600, color: colors.textDark, display: 'block', marginBottom: '6px' }}>
+                  Target timeline
+                </label>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '10px 14px',
+                  border: `1.5px solid ${colors.border}`,
+                  borderRadius: '8px',
+                  background: '#fafcfc',
+                  cursor: 'pointer',
+                }}>
+                  <span style={{ color: colors.textGray, fontSize: '14px' }}>Assign project manager</span>
+                  <i className="fas fa-chevron-down" style={{ color: colors.textGray, fontSize: '14px' }}></i>
+                </div>
+              </div>
+
+              <button
+                style={{
+                  background: colors.primary,
+                  color: '#fff',
+                  border: 'none',
+                  padding: '14px',
+                  borderRadius: '10px',
+                  fontSize: '16px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontFamily: "'Poppins', sans-serif",
+                  width: '100%',
+                  marginTop: '8px',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = colors.primaryDark}
+                onMouseLeave={(e) => e.currentTarget.style.background = colors.primary}
+                onClick={() => {
+                  alert('Project created successfully!');
+                  setShowProjectModal(false);
+                }}
+              >
+                Create project
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
