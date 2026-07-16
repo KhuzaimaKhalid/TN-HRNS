@@ -1,5 +1,5 @@
 // services/api.js
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'https://trustnexus-internship.vercel.app/api';
 const useRealApi = true; // 👈 Forced true to connect to the real cloud backend
 
 // ─── Mock Data ──────────────────────────────────────────────────
