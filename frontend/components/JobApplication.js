@@ -1,10 +1,12 @@
 // components/JobApplication.js
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-
+import { applicationAPI } from '@/services/api';
 export default function JobApplication() {
   const router = useRouter();
-
+  const [submitting, setSubmitting] = useState(false);   // 👈 add this
+  const [submitError, setSubmitError] = useState('');    // 👈 add this
+  
   // Form state
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
@@ -37,16 +39,33 @@ export default function JobApplication() {
     return newErrors;
   };
 
-  const handleNext = (e) => {
+  const handleNext = async (e) => {
     e.preventDefault();
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
-    // Save data to localStorage or state management (for demo)
-    // Then navigate to upload page
-    router.push('/upload');
+
+    setSubmitting(true);
+    setSubmitError('');
+
+    try {
+      // Actually create the application row in the backend
+      await applicationAPI.submit(position);
+
+      // Keep personal info around for the upload step
+      localStorage.setItem('applicationData', JSON.stringify({
+        fullName, phone, email, skills, position
+      }));
+
+      router.push('/upload');
+    } catch (err) {
+      console.error('Application submit error:', err);
+      setSubmitError(err.message || 'Failed to submit application. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

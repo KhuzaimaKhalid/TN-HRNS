@@ -4,7 +4,7 @@ import { useState } from 'react';
 export default function TaskDetailView({ candidate, onBack, onSubmit }) {
   const colors = {
     primary: '#007A7C',
-    border: '#020a14',
+    border: '#cbd5e1', 
     textDark: '#1A1A1A',
     textGray: '#666666',
     textMuted: '#8a8f98',
@@ -15,6 +15,8 @@ export default function TaskDetailView({ candidate, onBack, onSubmit }) {
   const [files, setFiles] = useState([]);
   const [link, setLink] = useState('');
   const [comments, setComments] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const handleFileDrop = (e) => {
     e.preventDefault();
@@ -33,11 +35,33 @@ export default function TaskDetailView({ candidate, onBack, onSubmit }) {
     setFiles(files.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = () => {
-    if (onSubmit) {
-      onSubmit({ files, link, comments });
+  const handleSubmit = async () => {
+    setSubmitError('');
+    setSubmitting(true);
+    try {
+      // NOTE: backend's submitCandidateTask derives candidate_id/application_id
+      // itself from the logged-in user's token (req.user.user_id) — it ignores
+      // candidate_id/application_id even if sent, so we don't need them here.
+      const formData = new FormData();
+      formData.append('repository_link', link || '');
+      formData.append('comments', comments || 'N/A');
+
+      // Route is upload.array('attachments') — EVERY file must be appended
+      // under the SAME field name 'attachments' (not 'attachments[0]' etc).
+      // multerConfig only accepts pdf/doc/docx/jpg/jpeg/png, max 4.5MB each.
+      files.forEach((file) => {
+        formData.append('attachments', file);
+      });
+
+      if (onSubmit) {
+        await onSubmit(formData);
+      }
+    } catch (err) {
+      console.error('Submission failed:', err);
+      setSubmitError(err.message || 'Failed to submit task. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
-    onBack();
   };
 
   return (
@@ -50,113 +74,75 @@ export default function TaskDetailView({ candidate, onBack, onSubmit }) {
           color: colors.textGray,
           cursor: 'pointer',
           fontSize: '14px',
-          fontFamily: "'Poppins', sans-serif",
           display: 'flex',
           alignItems: 'center',
           gap: '6px',
-          padding: '0',
-          marginBottom: '16px',
+          marginBottom: '20px'
         }}
       >
-        <i className="fas fa-arrow-left"></i> Back to Application Tracker
+        <i className="fas fa-arrow-left"></i> Back to Timeline
       </button>
 
-      <div style={{
-        background: colors.lightTeal,
-        borderRadius: '12px',
-        padding: '16px 20px',
-        marginBottom: '24px',
-        borderLeft: `4px solid ${colors.primary}`,
-      }}>
-        <h2 style={{ fontSize: '18px', fontWeight: 600, color: colors.textDark, margin: 0 }}>
-          {candidate?.name || 'Ayesha Khan'} – {candidate?.role || 'AI Engineer Intern'}
-        </h2>
-        <p style={{ fontSize: '13px', color: colors.textGray, margin: '2px 0 0 0' }}>
-          Applied on {candidate?.appliedDate || '2nd June 2026'}
-        </p>
-      </div>
-
-      <div style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.border}`,
-        borderRadius: '16px',
-        padding: '28px',
-      }}>
-        <h3 style={{ fontSize: '18px', fontWeight: 600, color: colors.textDark, margin: '0 0 4px 0' }}>
-          Submission Portal
-        </h3>
-        <p style={{ fontSize: '14px', color: colors.textMuted, margin: '0 0 20px 0' }}>
-          {candidate?.taskStatus || 'Pending'}
+      <div style={{ background: colors.cardBg, borderRadius: '12px', padding: '24px', border: `1px solid ${colors.border}` }}>
+        <h3 style={{ margin: '0 0 8px 0', color: colors.textDark, fontSize: '20px' }}>Submit Task Assessment</h3>
+        <p style={{ color: colors.textGray, fontSize: '14px', margin: '0 0 20px 0' }}>
+          Please upload your deliverables and reference links for <strong>{candidate?.position || candidate?.role || 'Assigned Task'}</strong>.
         </p>
 
-        {/* File Upload */}
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ fontSize: '14px', fontWeight: 500, color: colors.textDark, display: 'block', marginBottom: '8px' }}>
-            Drag and drop your files here
-          </label>
-          <div
-            style={{
-              border: `2px dashed ${colors.border}`,
-              borderRadius: '12px',
-              padding: '30px',
-              textAlign: 'center',
-              cursor: 'pointer',
-              background: '#fafbfc',
-              transition: 'all 0.2s',
-            }}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={handleFileDrop}
-            onClick={() => document.getElementById('file-upload').click()}
-          >
-            <i className="fas fa-cloud-upload-alt" style={{ fontSize: '28px', color: colors.textMuted, display: 'block', marginBottom: '8px' }}></i>
-            <p style={{ margin: 0, color: colors.textGray, fontSize: '14px' }}>or click to browse files</p>
-            <p style={{ margin: '4px 0 0 0', color: colors.textMuted, fontSize: '12px' }}>
-              Supported formats: .zip, .rar, .pdf (Max 50MB)
-            </p>
-            <input
-              id="file-upload"
-              type="file"
-              multiple
-              style={{ display: 'none' }}
-              onChange={handleFileSelect}
-            />
-          </div>
-          {files.length > 0 && (
-            <div style={{ marginTop: '12px' }}>
-              {files.map((file, index) => (
-                <div key={index} style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '8px 12px',
-                  background: '#f8f9fa',
-                  borderRadius: '8px',
-                  marginBottom: '6px',
-                }}>
-                  <span style={{ fontSize: '13px', color: colors.textDark }}>
-                    <i className="fas fa-file" style={{ marginRight: '8px', color: colors.primary }}></i>
-                    {file.name} ({(file.size / 1024).toFixed(1)} KB)
-                  </span>
-                  <button
-                    onClick={() => removeFile(index)}
-                    style={{ background: 'none', border: 'none', color: '#dc3545', cursor: 'pointer' }}
-                  >
-                    <i className="fas fa-times"></i>
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+        {/* Dropzone */}
+        <div
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={handleFileDrop}
+          style={{
+            border: `2px dashed ${colors.primary}`,
+            borderRadius: '10px',
+            padding: '30px',
+            textAlign: 'center',
+            background: colors.lightTeal,
+            cursor: 'pointer',
+            marginBottom: '20px',
+          }}
+          onClick={() => document.getElementById('task-file-input').click()}
+        >
+          <input
+            id="task-file-input"
+            type="file"
+            multiple
+            style={{ display: 'none' }}
+            onChange={handleFileSelect}
+          />
+          <i className="fas fa-cloud-upload-alt" style={{ fontSize: '32px', color: colors.primary, marginBottom: '10px' }}></i>
+          <p style={{ margin: '0', fontSize: '14px', fontWeight: 600, color: colors.textDark }}>
+            Drag & Drop files here or click to browse
+          </p>
+          <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: colors.textMuted }}>
+            PDF, ZIP, DOCX up to 10MB
+          </p>
         </div>
 
-        {/* Repository / Drive Link */}
-        <div style={{ marginBottom: '16px' }}>
-          <label style={{ fontSize: '14px', fontWeight: 500, color: colors.textDark, display: 'block', marginBottom: '6px' }}>
-            Repository / Drive Link
+        {/* File List */}
+        {files.length > 0 && (
+          <div style={{ marginBottom: '20px' }}>
+            <h4 style={{ fontSize: '13px', fontWeight: 600, color: colors.textDark, margin: '0 0 8px 0' }}>Selected Files</h4>
+            {files.map((file, idx) => (
+              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8f9fa', padding: '8px 12px', borderRadius: '6px', marginBottom: '6px' }}>
+                <span style={{ fontSize: '13px', color: colors.textDark }}>{file.name}</span>
+                <button onClick={(e) => { e.stopPropagation(); removeFile(idx); }} style={{ background: 'none', border: 'none', color: '#dc3545', cursor: 'pointer' }}>
+                  <i className="fas fa-trash-alt"></i>
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Links input */}
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ fontSize: '13px', fontWeight: 500, color: colors.textDark, display: 'block', marginBottom: '6px' }}>
+            Project/Repository Link
           </label>
           <input
-            type="url"
-            placeholder="https://github.com/username/repo"
+            type="text"
+            placeholder="https://github.com/yourproject"
             value={link}
             onChange={(e) => setLink(e.target.value)}
             style={{
@@ -165,17 +151,15 @@ export default function TaskDetailView({ candidate, onBack, onSubmit }) {
               borderRadius: '8px',
               border: `1px solid ${colors.border}`,
               fontSize: '14px',
-              fontFamily: "'Poppins', sans-serif",
               color: colors.textDark,
-              outline: 'none',
-              boxSizing: 'border-box',
+              boxSizing: 'border-box'
             }}
           />
         </div>
 
-        {/* Additional Comments */}
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ fontSize: '14px', fontWeight: 500, color: colors.textDark, display: 'block', marginBottom: '6px' }}>
+        {/* Comments */}
+        <div style={{ marginBottom: '24px' }}>
+          <label style={{ fontSize: '13px', fontWeight: 500, color: colors.textDark, display: 'block', marginBottom: '6px' }}>
             Additional Comments
           </label>
           <textarea
@@ -189,34 +173,34 @@ export default function TaskDetailView({ candidate, onBack, onSubmit }) {
               borderRadius: '8px',
               border: `1px solid ${colors.border}`,
               fontSize: '14px',
-              fontFamily: "'Poppins', sans-serif",
               color: colors.textDark,
-              outline: 'none',
               boxSizing: 'border-box',
-              resize: 'vertical',
+              resize: 'vertical'
             }}
           />
         </div>
 
+        {submitError && (
+          <p style={{ color: '#dc3545', fontSize: '13px', marginBottom: '12px' }}>{submitError}</p>
+        )}
+
         <button
           onClick={handleSubmit}
+          disabled={submitting}
           style={{
             width: '100%',
-            background: colors.primary,
+            background: submitting ? colors.textMuted : colors.primary,
             color: '#fff',
             border: 'none',
             padding: '12px',
             borderRadius: '10px',
-            cursor: 'pointer',
+            cursor: submitting ? 'not-allowed' : 'pointer',
             fontWeight: 600,
             fontSize: '15px',
-            fontFamily: "'Poppins', sans-serif",
             transition: 'background 0.15s',
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = '#046466')}
-          onMouseLeave={(e) => (e.currentTarget.style.background = colors.primary)}
         >
-          Submit Work
+          {submitting ? 'Submitting...' : 'Submit Assessment'}
         </button>
       </div>
     </div>

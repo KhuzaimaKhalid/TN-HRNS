@@ -1,9 +1,32 @@
 // components/HRLayout.js
 import { useRouter } from 'next/router';
-
+import { useState, useEffect } from 'react';
 export default function HRLayout({ children }) {
   const router = useRouter();
 
+  // State to hold dynamic HR user data
+  const [user, setUser] = useState({ name: 'HR User', role: 'HR' });
+
+  useEffect(() => {
+    // Get the saved user data from localStorage
+    const savedData = localStorage.getItem('userData');
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        if (parsed && parsed.name) {
+          setUser({
+            name: parsed.name,
+            role: localStorage.getItem('userRole') || 'HR'
+          });
+        }
+      } catch (err) {
+        console.error("Error parsing user data:", err);
+      }
+    }
+  }, []);
+  const initials = user.name
+    ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+    : 'HR';
   const navItems = [
     { name: 'Dashboard', path: '/hr-dashboard', icon: 'fa-chart-pie' },
     { name: 'Calendar', path: '/calendar', icon: 'fa-calendar-alt' },
@@ -25,9 +48,9 @@ export default function HRLayout({ children }) {
       <div className="hr-body">
         <aside className="hr-sidebar">
           <div className="sidebar-profile">
-            <div className="profile-avatar">SA</div>
-            <div className="profile-name">Sara Afzal</div>
-            <div className="profile-role">HR</div>
+            <div className="profile-avatar">{initials}</div>
+            <div className="profile-name">{user.name}</div>
+            <div className="profile-role">{user.role}</div>
           </div>
           <nav className="sidebar-nav">
             {navItems.map((item) => (

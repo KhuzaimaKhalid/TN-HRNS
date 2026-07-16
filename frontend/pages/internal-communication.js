@@ -1,28 +1,37 @@
 // pages/internal-communication.js
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import HRLayout from '@/components/HRLayout';
 import HRPageLayout from '@/components/HRPageLayout';
 import { taskAPI } from '@/services/api';
+
+// Converts a raw task row from the backend into the shape this page's table expects
+function mapTaskFromBackend(t) {
+  return {
+    id: t.task_id,
+    work: t.title,
+    assignee: t.assigned_user_name || t.assignee_name || 'Unassigned',
+    reporter: t.reporter || 'Unknown',
+    priority: t.priority || 'Medium',
+    status: t.status || 'To do',
+    resolution: t.status && t.status.toLowerCase().includes('done') ? 'Resolved' : 'Unresolved',
+    created: t.created_at
+      ? new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      : '',
+    updated: t.updated_at
+      ? new Date(t.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      : '',
+    dueDate: t.due_date || '',
+  };
+}
 
 export default function InternalCommunication() {
   const [activeTab, setActiveTab] = useState('Summary');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
-  const [workItems, setWorkItems] = useState([
-    {
-      id: 1,
-      work: 'Work on screens (wireframe)',
-      assignee: 'Unassigned',
-      reporter: 'abc',
-      priority: 'Highest',
-      status: 'To do',
-      resolution: 'Unresolved',
-      created: 'Jul 7, 2026',
-      updated: 'Jul 7, 2026',
-      dueDate: '2026-07-14',
-    },
-  ]);
+  const [workItems, setWorkItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [newItem, setNewItem] = useState({
     project: '',
     workType: '',
@@ -55,6 +64,28 @@ export default function InternalCommunication() {
     lightTeal: '#E8F5F5',
   };
 
+  // ─── Load real tasks from the backend on mount ─────────────
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchTasks() {
+      try {
+        const res = await taskAPI.getAll();
+        if (!isMounted) return;
+        if (res.success) {
+          setWorkItems(res.data.map(mapTaskFromBackend));
+        } else {
+          setError(res.message || 'Failed to load tasks');
+        }
+      } catch (err) {
+        if (isMounted) setError(err.message || 'Failed to load tasks');
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+    fetchTasks();
+    return () => { isMounted = false; };
+  }, []);
+
   const handleSelectAll = () => {
     if (selectedItems.length === workItems.length) {
       setSelectedItems([]);
@@ -69,9 +100,21 @@ export default function InternalCommunication() {
     );
   };
 
-  const handleDelete = () => {
-    setWorkItems((prev) => prev.filter((item) => !selectedItems.includes(item.id)));
-    setSelectedItems([]);
+  // ─── Delete: now actually calls the backend ─────────────
+  const handleDelete = async () => {
+    if (selectedItems.length === 0) return;
+    setError(null);
+    try {
+      const res = await taskAPI.bulkDelete(selectedItems);
+      if (res.success) {
+        setWorkItems((prev) => prev.filter((item) => !selectedItems.includes(item.id)));
+        setSelectedItems([]);
+      } else {
+        setError(res.message || 'Failed to delete tasks');
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to delete tasks');
+    }
   };
 
   // work = workType (primary) → summary (fallback) → 'New Task'
@@ -88,7 +131,7 @@ export default function InternalCommunication() {
     formData.append('team', newItem.team);
     formData.append('status', newItem.status || 'To do');
     if (newItem.attachment) formData.append('attachment', newItem.attachment);
-  
+
     try {
       const res = await taskAPI.create(formData);
       if (res.success) {
@@ -116,16 +159,31 @@ export default function InternalCommunication() {
     }
   };
 
-  const handleStatusChange = () => {
-    if (!statusChange) return;
-    setWorkItems((prev) =>
-      prev.map((item) =>
-        selectedItems.includes(item.id) ? { ...item, status: statusChange } : item
-      )
-    );
-    setSelectedItems([]);
-    setShowStatusModal(false);
-    setStatusChange('');
+  // ─── Status change: now actually calls the backend ─────────────
+  const handleStatusChange = async () => {
+    if (!statusChange || selectedItems.length === 0) return;
+    setError(null);
+    try {
+      const results = await Promise.all(
+        selectedItems.map((id) => taskAPI.updateStatus(id, statusChange))
+      );
+      const allOk = results.every((r) => r.success);
+      if (allOk) {
+        setWorkItems((prev) =>
+          prev.map((item) =>
+            selectedItems.includes(item.id) ? { ...item, status: statusChange } : item
+          )
+        );
+      } else {
+        setError('Some tasks failed to update.');
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to update status');
+    } finally {
+      setSelectedItems([]);
+      setShowStatusModal(false);
+      setStatusChange('');
+    }
   };
 
   const handleFileChange = (e) => {
@@ -304,8 +362,23 @@ export default function InternalCommunication() {
             ))}
           </div>
 
+          {/* ─── Error banner ────────────────────────────────── */}
+          {error && (
+            <div style={{
+              background: '#f8d7da', color: '#c0392b', padding: '12px 16px',
+              margin: '16px 26px', borderRadius: '8px', fontSize: '13px',
+              fontFamily: "'Poppins', sans-serif",
+            }}>
+              {error}
+            </div>
+          )}
+
           {/* ─── Table ────────────────────────────────────────── */}
-          {workItems.length === 0 ? (
+          {loading ? (
+            <div style={{ padding: '60px 20px', textAlign: 'center', color: colors.textMuted, fontSize: '14px' }}>
+              Loading tasks...
+            </div>
+          ) : workItems.length === 0 ? (
             <>
               <div style={{ borderBottom: `1px solid ${colors.borderDark}` }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -544,13 +617,6 @@ export default function InternalCommunication() {
                 onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
               >
                 Select all
-              </button>
-              <button
-                style={actionButtonStyle}
-                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.18)')}
-                onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
-              >
-                Edit fields
               </button>
               <button
                 style={actionButtonStyle}
@@ -843,7 +909,7 @@ export default function InternalCommunication() {
                   onMouseEnter={(e) => (e.currentTarget.style.background = colors.primaryDark)}
                   onMouseLeave={(e) => (e.currentTarget.style.background = colors.primary)}
                 >
-                  Create Project
+                  Create Task
                 </button>
               </div>
             </div>

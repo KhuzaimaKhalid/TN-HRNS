@@ -33,8 +33,9 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await applicationAPI.getAll();
-        if (response && response.data) {
+        const response = await applicationAPI.getAll(); // Hits GET /api/candidate/dashboard
+        
+        if (response && response.status === "success" && response.data) {
           setData(response.data);
         } else {
           setData(fallbackData);
@@ -57,6 +58,33 @@ export default function Dashboard() {
   );
 
   const info = data || fallbackData;
+
+  // Extract candidate values from API format or fallback
+  const candidateName = info.candidate?.name || info.name || 'there';
+  
+  // Stats mapping
+  const statsTotal = info.stats?.total ?? 0;
+  const statsInProgress = info.stats?.in_progress ?? info.stats?.inProgress ?? 0;
+  const statsSelected = info.stats?.selected ?? 0;
+  const statsRejected = info.stats?.rejected ?? 0;
+
+  // Status mapping
+  const statusPosition = info.candidate?.applied_position || info.status?.position || 'N/A';
+  const statusAppliedOn = info.candidate?.applied_date || info.candidate?.createdAt 
+    ? new Date(info.candidate?.applied_date || info.candidate?.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+    : (info.status?.appliedDate || 'N/A');
+  const statusCurrent = info.candidate?.status || info.status?.current || 'N/A';
+
+  // Interview mapping
+  const interviewDate = info.interview?.scheduled_date 
+    ? new Date(info.interview.scheduled_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    : (info.interview?.date || 'TBD');
+
+  const interviewDay = info.interview?.scheduled_date
+    ? new Date(info.interview.scheduled_date).toLocaleDateString('en-US', { weekday: 'long' })
+    : (info.interview?.day || 'TBD');
+
+  const interviewTime = info.interview?.scheduled_time || info.interview?.time || 'TBD';
 
   return (
     <div style={{
@@ -93,7 +121,7 @@ export default function Dashboard() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
             <div>
               <h1 style={{ fontSize: '2rem', fontWeight: 700, color: '#1A1A1A', marginBottom: '2px' }}>
-                Welcome back, {info.name ?? 'there'}! 😊
+                Welcome back, {candidateName}! 😊
               </h1>
               <p style={{ fontSize: '1rem', color: '#76777D' }}>
                 Here's what's happening with your applications.
@@ -117,10 +145,10 @@ export default function Dashboard() {
           gap: '16px',
           marginBottom: '32px',
         }}>
-          <div className="stat-card"><div className="stat-icon" style={{ background: 'var(--bg-light)' }}><i className="fas fa-file-alt"></i></div><div><div className="stat-number">{info.stats?.total ?? 0}</div><div className="stat-label">Total Applications</div></div></div>
-          <div className="stat-card"><div className="stat-icon" style={{ background: '#0ED1CD' }}><i className="fas fa-clock"></i></div><div><div className="stat-number">{info.stats?.inProgress ?? 0}</div><div className="stat-label">In Progress</div></div></div>
-          <div className="stat-card"><div className="stat-icon" style={{ background: '#25625D' }}><i className="fas fa-check-circle"></i></div><div><div className="stat-number">{info.stats?.selected ?? 0}</div><div className="stat-label">Selected</div></div></div>
-          <div className="stat-card"><div className="stat-icon" style={{ background: '#76777D' }}><i className="fas fa-times-circle"></i></div><div><div className="stat-number">{info.stats?.rejected ?? 0}</div><div className="stat-label">Rejected</div></div></div>
+          <div className="stat-card"><div className="stat-icon" style={{ background: 'var(--bg-light)' }}><i className="fas fa-file-alt"></i></div><div><div className="stat-number">{statsTotal}</div><div className="stat-label">Total Applications</div></div></div>
+          <div className="stat-card"><div className="stat-icon" style={{ background: '#0ED1CD' }}><i className="fas fa-clock"></i></div><div><div className="stat-number">{statsInProgress}</div><div className="stat-label">In Progress</div></div></div>
+          <div className="stat-card"><div className="stat-icon" style={{ background: '#25625D' }}><i className="fas fa-check-circle"></i></div><div><div className="stat-number">{statsSelected}</div><div className="stat-label">Selected</div></div></div>
+          <div className="stat-card"><div className="stat-icon" style={{ background: '#76777D' }}><i className="fas fa-times-circle"></i></div><div><div className="stat-number">{statsRejected}</div><div className="stat-label">Rejected</div></div></div>
         </div>
 
         {/* Grid */}
@@ -134,9 +162,9 @@ export default function Dashboard() {
             {/* Application Status */}
             <div className="dashboard-card">
               <h3><i className="fas fa-chart-line" style={{ marginRight: '8px', color: 'var(--primary)' }}></i>Application Status</h3>
-              <div className="status-item"><span className="status-label">Position</span><span className="status-value">{info.status?.position ?? 'N/A'}</span></div>
-              <div className="status-item"><span className="status-label">Applied on</span><span className="status-value">{info.status?.appliedDate ?? 'N/A'}</span></div>
-              <div className="status-item"><span className="status-label">Current Status</span><Badge status={info.status?.current ?? 'N/A'} /></div>
+              <div className="status-item"><span className="status-label">Position</span><span className="status-value">{statusPosition}</span></div>
+              <div className="status-item"><span className="status-label">Applied on</span><span className="status-value">{statusAppliedOn}</span></div>
+              <div className="status-item"><span className="status-label">Current Status</span><Badge status={statusCurrent} /></div>
               <button className="btn btn-primary" style={{ width: '100%', marginTop: '12px' }} onClick={() => router.push('/track')}>View Full Status</button>
             </div>
 
@@ -144,11 +172,23 @@ export default function Dashboard() {
             <div className="dashboard-card interview-card">
               <h3><i className="fas fa-video" style={{ marginRight: '8px', color: 'var(--primary)' }}></i>Upcoming Interview</h3>
               <div className="interview-details">
-                <div><strong>Date:</strong> {info.interview?.date ?? 'TBD'}</div>
-                <div><strong>Day:</strong> {info.interview?.day ?? 'TBD'}</div>
-                <div><strong>Time:</strong> {info.interview?.time ?? 'TBD'}</div>
+                <div><strong>Date:</strong> {interviewDate}</div>
+                <div><strong>Day:</strong> {interviewDay}</div>
+                <div><strong>Time:</strong> {interviewTime}</div>
               </div>
-              <button className="btn btn-dark" style={{ width: '100%', marginTop: '8px' }}><i className="fas fa-external-link-alt"></i> Join Interview</button>
+              {info.interview?.meet_link ? (
+                <a 
+                  href={info.interview.meet_link} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="btn btn-dark" 
+                  style={{ width: '100%', marginTop: '8px', display: 'inline-block', textAlign: 'center', textDecoration: 'none' }}
+                >
+                  <i className="fas fa-external-link-alt"></i> Join Interview
+                </a>
+              ) : (
+                <button className="btn btn-dark" style={{ width: '100%', marginTop: '8px' }} disabled><i className="fas fa-external-link-alt"></i> Join Interview</button>
+              )}
             </div>
           </div>
 
@@ -158,8 +198,8 @@ export default function Dashboard() {
             <div className="dashboard-card">
               <h3><i className="fas fa-bell"></i> Notifications</h3>
               <ul className="notification-list">
-                {(info.notifications || []).map((n) => (
-                  <li key={n.id} className={`notification-item ${n.read ? 'read' : 'unread'}`}>
+                {(info.notifications || []).map((n, idx) => (
+                  <li key={n.id || idx} className={`notification-item ${n.read ? 'read' : 'unread'}`}>
                     <div className="notification-dot"></div>
                     <div className="notification-content"><p className="notification-message">{n.message}</p><span className="notification-date">{n.date}</span></div>
                   </li>
@@ -178,7 +218,7 @@ export default function Dashboard() {
                 <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => router.push('/apply')}><i className="fas fa-file-alt"></i> Apply Now</button>
                 <button className="btn btn-dark" style={{ flex: 1 }} onClick={() => router.push('/track')}><i className="fas fa-search"></i> Track</button>
               </div>
-              <button className="btn btn-ghost" style={{ width: '100%', marginTop: '8px' }}><i className="fas fa-user-edit"></i> Edit Profile</button>
+              <button className="btn btn-ghost" style={{ width: '100%', marginTop: '8px' }} onClick={() => router.push('/apply')}><i className="fas fa-user-edit"></i> Edit Profile</button>
             </div>
           </div>
         </div>
